@@ -1,0 +1,9 @@
+[submodule "libs/core"]
+	path = libs/core
+	url = git://github.com/mootools/mootools-core.git
+[submodule "libs/more"]
+	path = libs/more
+	url = git://github.com/mootools/mootools-more.git
+[submodule "libs/clientcide"]
+	path = libs/clientcide
+	url = git://github.com/anutron/clientcide.git
