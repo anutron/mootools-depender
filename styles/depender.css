@@ -1,0 +1,251 @@
+html, body {
+	font-family: "Lucida Grande", "Lucida Sans Unicode", "Trebuchet MS", Helvetica, Arial, sans-serif;
+	margin: 0px;
+	font-size: 12px;
+	background: #ccc;
+}
+body {
+	padding-bottom: 500px;
+}
+body * {
+	position: relative;
+}
+a {
+	cursor: pointer;
+}
+h1 {
+	font-size: 16px;
+	font-weight: bold;
+	padding: 5px;
+	margin-bottom: 8px;
+	background: #999;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	z-index: 1;
+	border-bottom: 1px solid #222;
+}
+form {
+	width: 600px;
+	margin: 30px auto;
+}
+div.includes {
+	padding: 10px;
+}
+.sourceHeader {
+	font-size: 18px;
+	border-bottom: 1px solid #888;
+	padding: 15px 4px 4px;
+	clear: both;
+}
+div.select {
+	font-size: 10px;
+	position: absolute;
+	right: 4px;
+	margin-top: 6px;
+}
+div.select input {
+	display: none;
+}
+.button {
+	margin: 0px 2px;
+	padding: 2px 8px;
+	background: #eee;
+	color: #666;
+	border: 1px solid #bbb;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	cursor: pointer;
+	display: block;
+	font-weight: normal;
+	font-size: 12px;
+	float: left;
+}
+.button:hover {
+	border: 1px solid #777 !important;
+	color: #222 !important;
+}
+h1 .button {
+	float: right;
+	margin-right: 14px;
+}
+.sourceAll, .sourceNone {
+	float: right;
+	text-align: center;
+	top: -3px;
+}
+.dirHeader {
+	font-size: 14px;
+	padding: 4px;
+	margin: 0px 4px;
+	color: #666;
+	clear: both;
+}
+.script {
+	cursor: pointer;
+	padding: 2px 12px;
+	margin: 2px 8px;
+	border: 1px solid #888;
+	background-color: #ddd;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-box-shadow: 0 1px 3px #999;
+	-webkit-box-shadow: 0 1px 3px #999;
+}
+.script:hover {
+	border-color: #222;
+	color: #222;
+}
+.scripts input {
+	display: none;
+}
+.scripts li.exclude {
+	padding: 2px 0px;
+	margin: 2px;
+	width: 65px;
+	float: left;
+	text-align: center;
+	border: 1px solid #666;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-box-shadow: 0 1px 3px #999;
+	-webkit-box-shadow: 0 1px 3px #999;
+	color: #777;
+	cursor: pointer;
+}
+.scripts li.exclude:hover {
+	border-color: #222;
+	color: #222;
+}
+.scripts li.script {
+	width: 463px;
+	float: left;
+	clear: both;
+}
+.required {
+	border: 1px solid #5e9c5e;
+	background: #c0d9c0;
+}
+.checked, span.sourceAll.selected {
+	cursor: pointer;
+	border: 1px solid #333;
+	background: #333;
+	color: #fff;
+	-moz-box-shadow: 0 1px 3px #ddd;
+	-webkit-box-shadow: 0 1px 3px #ddd;
+}
+.checked:hover, span.sourceAll.selected:hover {
+	color: #fff !important;
+	border-color: #ccc !important;
+}
+.excluded {
+	border: 1px solid #bbb;
+	background: #ccc;
+	color: #aaa;
+	-moz-box-shadow: 0;
+	-webkit-box-shadow: 0;
+}
+.scripts li.exclude.excluded, span.sourceNone.selected {
+	border: 1px solid #a84747;
+	background-color: #e4c0c0;
+	color: #a84747;
+}
+
+/* controls */
+#controls {
+	width: 100%;
+	position: fixed;
+	bottom: -3px;
+	border-top: 1px solid #222;
+	z-index: 1;
+	background: #666;
+	left: 0px;
+}
+#controls table {
+	width: 100%;
+}
+#controls #url {
+	width: 60%;
+}
+#controls thead th {
+	padding-left: 10px;
+	background: #999;
+	font-weight: bold;
+}
+#controls tbody td {
+	padding: 7px 4px 12px 10px;
+}
+#controls ul li {
+	float: left;
+}
+#controls #compression_container li {
+	padding: 0px 10px 0px 2px;
+	color: #fff;
+}
+#controls a#link {
+	color: #fff;
+	text-decoration: underline;
+	display:block;
+}
+#controls #link_container {
+	overflow: hidden;
+	height: 16px;
+}
+#controls #action_list li {
+	float: right;
+}
+#controls #action_list .button {
+	float: right;
+}
+#controls a#copy, #controls a#copy_scripts {
+	padding-left: 22px;
+	background: #eee url(button_up.png) no-repeat 3px 3px;
+}
+#controls a.hover {
+	border-color: #222;
+	color: #222;
+	background: #eee url(button_over.png) no-repeat 3px 3px;
+}
+label {
+	cursor: pointer;
+}
+/* help */
+#help {
+	display: none;
+	width: 500px;
+	background: #d9d9d9;
+	border: 1px solid #444;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-box-shadow: 0 6px 10px #555;
+	-webkit-box-shadow: 0 2px 4px #555;
+}
+#help h2 {
+	padding: 10px;
+	background: #666;
+	color: #fff;
+	margin: 0px;
+	font-size: 14px;
+	font-weight: bold;
+}
+#help h2 .button {
+	float: right;
+}
+#help_contents {
+	max-height: 400px;
+	overflow: auto;
+}
+#help h3 {
+	font-size: 14px;
+	font-weight: bold;
+	padding: 4px;
+	margin: 0px 10px;
+	border-bottom: 1px solid #999;
+}
+#help p {
+	padding: 4px 10px;
+}
+.green {
+	color: #5FA841;
+}

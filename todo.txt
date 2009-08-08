@@ -1,0 +1,7 @@
+* integrate with clientcide lib:
+
+	if (window.Depender && Depender) Depender.loaded.... //nix loaded reference on instance; make shared
+
+* split Depender Class into server and clientcide versions
+* reconsider using a Class
+* save/load a state? (name it?)
