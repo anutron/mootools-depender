@@ -212,7 +212,7 @@ function writeFile($output, $name) {
 	fclose($fh);
 }
 function loadLib($lib) {
-	$file = "libraries/$lib.php";
+	$file = "compressors/$lib.php";
 	if (file_exists($file)){
 		include_once $file;
 		return true;
