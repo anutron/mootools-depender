@@ -64,13 +64,29 @@ function curPageURL() {
 	return str_replace('&download=true', '', $pageURL);
 }
 
+function parseArray($str) {
+	$ret = array();
+	if (!is_array($str)) {
+		if (strpos($str, ",") >=0) {
+			$vals = explode(",", $str);
+			foreach($vals as $val) {
+				$ret[] = trim($val);
+			}
+		} else {
+			$ret[] = $str;
+		}
+	} else {
+		$ret = $str;
+	}
+	return $ret;
+}
+
 function build() {
 	global $conf, $scriptMap, $sources;
 	$require = array();
 	$exclude = array();
 	if (getVar('requireLibs')) {
-		$requireLibs = getVar('requireLibs');
-		if (!is_array($requireLibs)) $requireLibs = array($requireLibs);
+		$requireLibs = parseArray(getVar('requireLibs'));
 		foreach($requireLibs as $lib) {
 			foreach($sources[$lib] as $dir => $files) {
 				foreach($files as $file => $fileprops) {
@@ -80,8 +96,7 @@ function build() {
 		}
 	}
 	if (getVar('excludeLibs')) {
-		$excludeLibs = getVar('excludeLibs');
-		if (!is_array($excludeLibs)) $excludeLibs = array($excludeLibs);
+		$excludeLibs = parseArray(getVar('excludeLibs'));
 		foreach($excludeLibs as $lib) {
 			foreach($sources[$lib] as $dir => $files) {
 				foreach($files as $file => $fileprops) {
@@ -93,12 +108,12 @@ function build() {
 	
 	$reqs = getVar('require');
 	if ($reqs) {
-		if (!is_array($reqs)) $reqs = split(',',$reqs);
+		$reqs = parseArray($reqs);
 		$require = merge_unique($reqs, $require);
 	}
 	$exs = getVar('exclude');
 	if ($exs) {
-		if (!is_array($exs)) $exs = split(',',$exs);
+		$exs = parseArray($exs);
 		$exclude = merge_unique($exs, $exclude);
 	}
 	
@@ -106,6 +121,10 @@ function build() {
 	if (getVar('noCache')) $cache = false;
 	$compression = $conf["compression"];
 	if (getVar('compression')) $compression = getVar('compression');
+	if ($compression != "none" && !in_array($compression, $conf["available_compressions"])) {
+		if(count($conf["available_compressions"]) > 0) $compression = $conf["available_compressions"][0];
+		else $compression = "none";
+	}
 	
 	$deps = computeDependencies($require, $scriptMap);
 	$output = array();
