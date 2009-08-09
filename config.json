@@ -5,13 +5,13 @@
 	"cache":"false",
 	"libs": {
 		"mootools-core": {
-			"scripts": "mootools/core/Source"
+			"scripts": "libs/core/Source"
 		},
 		"mootools-more": {
-			"scripts": "mootools/more/Source"
+			"scripts": "libs/more/Source"
 		},
 		"clientcide": {
-			"scripts": "mootools/clientcide/Source"
+			"scripts": "libs/clientcide/Source"
 		}
 	}
 }
