@@ -9,9 +9,6 @@
 		},
 		"mootools-more": {
 			"scripts": "libs/more/Source"
-		},
-		"clientcide": {
-			"scripts": "libs/clientcide/Source"
 		}
 	}
 }
