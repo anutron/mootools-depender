@@ -12,6 +12,8 @@ function decode($string){
 function readJson($string){
 	if (file_exists($string)) {
 		return decode(file_get_contents($string));
+	} else {
+		lg("could not find json file: ".$string);
 	}
 }
 $conf = readJson("config.json");
