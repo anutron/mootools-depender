@@ -5,3 +5,5 @@
 * split Depender Class into server and clientcide versions
 * reconsider using a Class
 * save/load a state? (name it?)
+* clear cache method that empties outputs/
+* ensure that headers allow for browsers to cache scripts
