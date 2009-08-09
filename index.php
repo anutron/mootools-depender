@@ -71,14 +71,12 @@ include_once "build.php";
 			<tr>
 				<td id="compression_container">
 					<ul>
+						<?php foreach($conf['available_compressions'] as $comp) { ?>
 						<li><label>
-							<input type="radio" name="compression" value="yui">
-							yui</label>
+							<input type="radio" name="compression" value="<?php echo $comp; ?>">
+							<?php echo $comp; ?></label>
 						</li>
-						<li><label>
-							<input type="radio" name="compression" value="jsmin"> 
-							jsmin</label>
-						</li>
+						<?php } ?>
 						<li><label>
 							<input type="radio" name="compression" value="none"> 
 							none</label>

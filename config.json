@@ -1,6 +1,7 @@
 {
 	"copyright": ["//MooTools, <http://mootools.net>, My Object Oriented (JavaScript) Tools. Copyright (c) 2006-2009 Valerio Proietti, <http://mad4milk.net>, MIT Style License.","//MooTools More, <http://mootools.net/more>. Copyright (c) 2006-2009 Aaron Newton <http://clientcide.com/>, Valerio Proietti <http://mad4milk.net> & the MooTools team <http://mootools.net/developers>, MIT Style License.","//Clientcide Scripts, <http://clientcide.com/js> Copyright (c) 2006-2009 Aaron Newton, MIT Style License."],
 	"compression": "jsmin",
+	"available_compressions": ["yui", "jsmin"],
 	"cache":"false",
 	"libs": {
 		"mootools-core": {
