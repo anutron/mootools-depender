@@ -115,7 +115,9 @@ include_once "build.php";
 		<p>TODO: document this.</p>
 	</div>
 </div>
-
+<div id="warn_url">
+	You must select at least one dependency.
+</div>
 <script>
 Interface.start();
 $('help').position();

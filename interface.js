@@ -39,8 +39,7 @@ var Interface = {
 	setupActions: function(){
 		$('reset').addEvent('click', this.reset.bind(this));
 		$('download').addEvent('click', function(){
-			if (!this.getUrl().contains('?')) return alert('you must select at least one dependency.');
-			window.location = this.getUrl() + '&download=true';
+			if (this.checkUrl()) window.location = this.getUrl() + '&download=true';
 		}.bind(this));
 	},
 	clippers: function(){
@@ -48,14 +47,13 @@ var Interface = {
 		copy.glue('copy');
 		copy.div.inject($('copy'), 'after').setPosition({relativeTo: $('copy')});
 		copy.addEventListener('mouseDown', function(){
-			copy.setText(Interface.getUrl());
+			if (this.checkUrl()) copy.setText(this.getUrl());
 		}.bind(this));
 		var scripts = new ZeroClipboard.Client();
 		scripts.glue('copy_scripts');
 		scripts.div.inject($('copy_scripts'), 'after').setPosition({relativeTo: $('copy_scripts')});
 		scripts.addEventListener('mouseDown', function(){
-			var val = "<scr'+'ipt src='"+this.getUrl()+"'></scr'+'ipt>";
-			scripts.setText(val);
+			if (this.checkUrl()) scripts.setText("<scr'+'ipt src='"+this.getUrl()+"'></scr'+'ipt>");
 		}.bind(this));
 	},
 	getUrl: function(){
@@ -63,6 +61,20 @@ var Interface = {
 		var uri = new URI(form.get('action'));
 		uri.set('query', form.toQueryString());
 		return uri.toString();
+	},
+	checkUrl: function(){
+		var uri = new URI(this.getUrl());
+		if (!uri.get('data').require && !uri.get('data').requireLibs) {
+			$('warn_url').position().setStyle('display', 'block').fade('in').get('tween').clearChain().chain(function(){
+				(function(){
+					$('warn_url').fade('out').get('tween').chain(function(){
+						$('warn_url').setStyle('display', 'block');
+					});
+				}).delay(1500)
+			});
+			return false;
+		}
+		return true;
 	},
 	reset: function(){
 		$$('input').set('checked', false);

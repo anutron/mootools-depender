@@ -249,3 +249,14 @@ label {
 .green {
 	color: #5FA841;
 }
+#warn_url {
+	display: none;
+	width: 200px;
+	background: #d9d9d9;
+	border: 1px solid #444;
+	padding: 10px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-box-shadow: 0 6px 10px #555;
+	-webkit-box-shadow: 0 2px 4px #555;	
+}
