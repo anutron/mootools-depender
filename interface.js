@@ -39,7 +39,7 @@ var Interface = {
 	setupActions: function(){
 		$('reset').addEvent('click', this.reset.bind(this));
 		$('download').addEvent('click', function(){
-			if (this.checkUrl()) window.location = this.getUrl() + '&download=true';
+			if (this.checkUrl()) window.location.href = this.getUrl() + '&download=true';
 		}.bind(this));
 	},
 	clippers: function(){
@@ -53,7 +53,7 @@ var Interface = {
 		scripts.glue('copy_scripts');
 		scripts.div.inject($('copy_scripts'), 'after').setPosition({relativeTo: $('copy_scripts')});
 		scripts.addEventListener('mouseDown', function(){
-			if (this.checkUrl()) scripts.setText("<scr'+'ipt src='"+this.getUrl()+"'></scr'+'ipt>");
+			if (this.checkUrl()) scripts.setText("<scr"+"ipt src=\""+this.getUrl()+"\"></scr"+"ipt>");
 		}.bind(this));
 	},
 	getUrl: function(){
