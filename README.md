@@ -46,7 +46,7 @@ Outputs
 -------
 Each requested file is output into it's own directory, named as the md5 hash of the file's contents (the list of file names, not the actual concatenated code). Each file, whether compressed or not, is given a header that looks something like this:
 
-	//<copyright as defined in config.json
+	//<copyright as defined in config.json>
 
 	//Contents: Core, Hash, Number, Function, String, Array, etc.
 
@@ -74,8 +74,6 @@ In addition to the four values you can specify for the contents of the file, you
 
 * cache - if set to *true* you'll be returned a cached version of the script even if the server is set to *false* and vice versa.
 * compression - you'll be returned the compression type you specify regardless of the server default. Note that if you specify a compression type that the server does not allow, you'll be returned which ever one it does. If it does not support compression at all, you will not be returned a compressed file. You can also specify "none" which is useful for development and debugging.
-
-You can override the default values specified in the *config.json* file with query string values.
 
 File System Caching vs Other Options
 ------------------------------------
