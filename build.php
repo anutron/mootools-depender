@@ -1,7 +1,8 @@
 <?php
-
+$error = "";
 function lg($str) {
-	echo $str."<br/>";
+	global $error;
+	$error = $error.$str."<br/>".PHP_EOL.PHP_EOL;
 }
 function encode($val){
 	return json_encode($val);
@@ -45,10 +46,14 @@ function computeDependencies($scripts, $data){
 	if (!is_array($scripts)) $scripts = array($scripts);
 	$deps = array();
 	foreach($scripts as $script) {
-		foreach($data[$script]["deps"] as $dep) {
-			if (!in_array($dep, $scripts)) $deps = merge_unique($deps, computeDependencies($dep, $data));
+		if (!isset($data[$script])) {
+			lg($script." could not be found in the dependency map.");
+		} else {
+			foreach($data[$script]["deps"] as $dep) {
+				if (!in_array($dep, $scripts)) $deps = merge_unique($deps, computeDependencies($dep, $data));
+			}
+			if (!in_array($script, $deps)) { array_push($deps, $script); }
 		}
-		if (!in_array($script, $deps)) { array_push($deps, $script); }
 	}
 	return $deps;
 }
@@ -82,7 +87,7 @@ function parseArray($str) {
 }
 
 function build() {
-	global $conf, $scriptMap, $sources;
+	global $conf, $scriptMap, $sources, $error;
 	$require = array();
 	$exclude = array();
 	if (getVar('requireLibs')) {
@@ -138,8 +143,12 @@ function build() {
 	$dirName = 'outputs/'.md5(join($output_contents, '-'));
 	$fileName = $dirName.'/'.'script';
 	$uncompressed = $fileName.'_uncompressed.js';
-	header("Content-Type: application/x-javascript");
-	if (getVar('download')) header('Content-Disposition: attachment; filename="built.js"');
+	
+	if (getVar('download')) {
+		header('Content-Disposition: attachment; filename="built.js"');
+	} else {
+		header("Content-Type: application/x-javascript");
+	}
 
 	switch($compression) {
 		case 'yui':
@@ -154,8 +163,7 @@ function build() {
 	}
 	if (file_exists($fileName) && $cache) {
 		$responseName = join($require, '-').'.js';
-		header('filename="'.$responseName.'"');
-		echo file_get_contents($fileName);
+		echo $error.file_get_contents($fileName);
 		return;
 	}
 
@@ -191,11 +199,9 @@ function build() {
 		$header = "";
 		$build = "";
 	}
-	header('filename="'.$responseName.'"');
-	echo $header.$build;
+	echo $error.$header.$build;
 
 }
-
 function compress_yui($input){
 	loadLib('yui');
 	return yui($input);
@@ -229,11 +235,12 @@ function getVar($var) {
 	return false;
 }
 if (strpos($_SERVER["REQUEST_URI"], 'build.php')) {
+	global $error;
 	if (getVar('require') || getVar('requireLibs')) {
 		build();
 	} else {
 		header("Content-Type: application/x-javascript");
-		echo "//No scripts specified";
+		echo $error."//No scripts specified";
 	}
 }
 ?>
