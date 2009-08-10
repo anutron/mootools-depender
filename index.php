@@ -8,7 +8,7 @@ include_once "build.php";
 		<title>Depender - A MooTools Dependency Builder</title>
 		<link rel="stylesheet" href="styles/reset.css" type="text/css" media="screen" title="no title" charset="utf-8">
 		<link rel="stylesheet" href="styles/depender.css" type="text/css" media="screen" title="no title" charset="utf-8">
-		<script src="build.php?requireLibs=mootools-core&require[]=Fx.Reveal&require[]=URI&require[]=Element.Position&compression=false"></script>
+		<script src="build.php?requireLibs=mootools-core&require=Fx.Reveal,URI,Element.Position,String.QueryString&compression=false"></script>
 		<script src="interface.js" type="text/javascript" charset="utf-8"></script>
 		<script src="zeroclipboard/ZeroClipboard.js" type="text/javascript" charset="utf-8"></script>
 	</head>
