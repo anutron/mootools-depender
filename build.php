@@ -194,8 +194,12 @@ Class Depender {
 
 		foreach($includeLibs as $includeLib) {
 			$library  = $libs[$includeLib];
-			$include  = array_merge($include, $this->getScriptsNamesFromLibrary($library));
+			foreach($this->getScriptsNamesFromLibrary($library) as $script) {
+				$includes   = array_merge($includes, $this->getDependencies($script));
+				$includes[] = $script;
+			}
 		}
+
 		foreach($include as $script) {
 			$includes   = array_merge($includes, $this->getDependencies($script));
 			$includes[] = $script;
@@ -213,6 +217,7 @@ Class Depender {
 		$excludes = array_unique($excludes); //No duplicate
 
 		$includes = array_diff($includes, $excludes);
+
 
 		foreach($includes as $include) {
 			$out .= $this->getScriptFile($include, $this->getVar('compression'));
