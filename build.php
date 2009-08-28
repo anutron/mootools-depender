@@ -1,7 +1,7 @@
 <?php
 
 Class Depender {
-	const ConfigFilename  = 'config_example.json';
+	const ConfigFilename  = 'config.json';
 	const ScriptsFilename = 'scripts.json';
 
 	const Post            = 'POST';
