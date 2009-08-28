@@ -269,7 +269,7 @@ Class Depender {
 		print $out;
 	}
 }
-
+if (!file_exists('cache')) mkdir('cache');
 $depender = New Depender;
 if ($depender->getVar('require') || $depender->getVar('requireLibs')) {
 	$depender->build();
