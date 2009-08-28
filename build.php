@@ -154,7 +154,7 @@ Class Depender {
 	}
 
 	private function setCache($id, $value) {
-		$file = fopen('cache/'.$id, 'w+');
+		$file = fopen('cache/'.$id, 'w+') or die("can't open file: cache/".$id);
 		$result = fwrite($file, serialize($value));
 		fclose($file);
 		return $result;
