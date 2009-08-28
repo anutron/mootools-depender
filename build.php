@@ -1,7 +1,5 @@
 <?php
 
-	//TODO: Exclude
-
 Class Depender {
 	const ConfigFilename  = 'config_example.json';
 	const ScriptsFilename = 'scripts.json';
@@ -86,6 +84,7 @@ Class Depender {
 					$script['library']  = $libraryName;
 					$script['category'] = $categoryName;
 					$script['name']     = $scriptName;
+					$script['path']     = $library['scripts'].'/'.$script['category'].'/'.$script['name'].'.js';
 					$all[$scriptName]   = $script;
 				}
 			}
@@ -104,23 +103,21 @@ Class Depender {
 		}
 	}
 
-	private function getScriptFile($script, $compression=False) {
+	private function getScriptFile($scriptName, $compression=False) {
 		$flat      = $this->getFlatData();
-		$script    = $flat[$script];
+		$script    = $flat[$scriptName];
 		if (!is_array($script)) {
 			return '';
 		}
 
-		$config    = $this->getConfig();
-		$library   = $config['libs'][$script['library']];
-		$file      = $library['scripts'].'/'.$script['category'].'/'.$script['name'].'.js';
-		$cacheId   = $script['name'].'_'.fileatime($file).'_'.$compression;
+		$atime     = fileatime($script['path']);
+		$cacheId   = $script['name'].'_'.$atime.'_'.$compression;
 		$cached    = $this->getCache($cacheId);
 		if ($cached) {
 			return $cached;
 		}
 
-		$contents  = file_get_contents($file);
+		$contents  = file_get_contents($script['path']);
 
 		if ($compression) {
 			$contents = $this->compress($contents, $compression);
@@ -136,6 +133,7 @@ Class Depender {
 	}
 
 	public function header() {
+		header('Cache-Control: must-revalidate');
 		if ($this->getVar('download')) {
 			header('Content-Disposition: attachment; filename="built.js"');
 		} else {
@@ -178,12 +176,27 @@ Class Depender {
 		}
 	}
 
+	private function getLastModifiedDate($scripts) {
+		$max  = 0;
+		$flat = $this->getFlatData();
+		foreach($scripts as $scriptName) {
+			$script   = $flat[$scriptName];
+			$modified = fileatime($script['path']);
+			if ($modified > $max) {
+				$max = $modified;
+			}
+		}
+		return $max;
+	}
+
 	public function build() {
 		$include     = $this->getVar('require') ? explode(',', $this->getVar('require')) : Array();
 		$exclude     = $this->getVar('exclude') ? explode(',', $this->getVar('exclude')) : Array();
 
 		$includeLibs = $this->getVar('requireLibs') ? explode(',', $this->getVar('requireLibs')) : Array();
 		$excludeLibs = $this->getVar('excludeLibs') ? explode(',', $this->getVar('excludeLibs')) : Array();
+
+		$this->header();
 
 		$libs        = $this->getLibraries();
 		$includes    = Array();
@@ -219,6 +232,16 @@ Class Depender {
 		$includes = array_diff($includes, $excludes);
 
 
+		if ($_SERVER['HTTP_IF_MODIFIED_SINCE']) {
+			$browserCache = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
+			if ($browserCache >= $this->getLastModifiedDate($includes)) {
+				header('HTTP/1.1 304 Not Modified');
+				exit;
+			}
+		}
+
+		header('Last-modified: '.date('r', $this->getLastModifiedDate($includes)));
+
 		foreach($includes as $include) {
 			$out .= $this->getScriptFile($include, $this->getVar('compression'));
 		}
@@ -229,7 +252,6 @@ Class Depender {
 
 $depender = New Depender;
 if ($depender->getVar('require') || $depender->getVar('requireLibs')) {
-	$depender->header();
 	$depender->build();
 }
 ?>
