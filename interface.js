@@ -70,14 +70,13 @@ var Interface = {
 					$('warn_url').fade('out').get('tween').chain(function(){
 						$('warn_url').setStyle('display', 'block');
 					});
-				}).delay(1500)
+				}).delay(1500);
 			});
 			return false;
 		}
 		return true;
 	},
 	reset: function(){
-		$$('input').set('checked', false);
 		$$('li').each(function(li){
 			li.removeClass('required').removeClass('checked').removeClass('excluded');
 		});
@@ -87,7 +86,7 @@ var Interface = {
 	setupChex: function() {
 		this.scripts = $$('li.script');
 		this.scripts.each(function(script){
-			script.addEvent('click', this.select.bind(this))
+			script.addEvent('click', this.select.bind(this));
 			var input = script.getElement('input');
 			script.store('input', input);
 			input.store('li', script);
@@ -113,7 +112,7 @@ var Interface = {
 			[all, none].each(function(button) {
 				button.addEvent('click', this.selectSource.bind(this));
 				button.store('input', button.getElement('input')).store('section', sections[i]);
-			}, this)
+			}, this);
 		}, this);
 	},
 
@@ -166,11 +165,11 @@ var Interface = {
 	},
 	uncheck: function(input) {
 		input.set('checked', false);
-		input.retrieve('li').removeClass('checked')
+		input.retrieve('li').removeClass('checked');
 		this.compute();
 	},
 	getDeps: function(script, reqs){
-		var reqs = reqs || [];
+		reqs = reqs || [];
 		if (script == 'None' || !script || $(script).hasClass('libexcluded')) return reqs;
 		script = $(script);
 		var deps = script.get('deps').split(',');
