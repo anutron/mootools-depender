@@ -74,12 +74,12 @@ $depender = New Depender;
 					<ul>
 						<?php foreach($depender->getCompressions() as $comp) { ?>
 						<li><label>
-							<input type="radio" name="compression" value="<?php echo $comp.'" '; if ( $comp === $depender->getDefaultCompression()) echo 'checked="checked"';?>>
+							<input type="radio" name="compression" value="<?php echo $comp.'" '; if ( $comp === $depender->getDefaultCompression()) echo 'checked="checked"';?>/>
 							<?php echo $comp; ?></label>
 						</li>
 						<?php } ?>
 						<li><label>
-							<input type="radio" name="compression" value="">
+							<input type="radio" name="compression" value=""/>
 							none</label>
 						</li>
 					</ul>
