@@ -1,5 +1,6 @@
 <?php
 include_once "build.php";
+$depender = New Depender;
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -8,7 +9,7 @@ include_once "build.php";
 		<title>Depender - A MooTools Dependency Builder</title>
 		<link rel="stylesheet" href="styles/reset.css" type="text/css" media="screen" title="no title" charset="utf-8">
 		<link rel="stylesheet" href="styles/depender.css" type="text/css" media="screen" title="no title" charset="utf-8">
-		<script src="build.php?requireLibs=mootools-core&require=Fx.Reveal,URI,Element.Position,String.QueryString&compression=false"></script>
+		<script src="build.php?requireLibs=mootools-core&require=Fx.Reveal,URI,Element.Position,String.QueryString"></script>
 		<script src="interface.js" type="text/javascript" charset="utf-8"></script>
 		<script src="zeroclipboard/ZeroClipboard.js" type="text/javascript" charset="utf-8"></script>
 	</head>
@@ -21,7 +22,7 @@ include_once "build.php";
 <div class="includes">
 	<dl class="sources">
 	<?php 
-			foreach ($sources as $source => $data) { ?>
+			foreach ($depender->getLibraries() as $source => $data) { ?>
 		<dt class="sourceHeader">
 			<div class="select">
 				<span class="button sourceAll">include entire library
@@ -63,7 +64,7 @@ include_once "build.php";
 	<table cellpadding="0" cellspacing="0" border="0">
 		<thead>
 			<tr>
-				<th id="compression">compression (server default: <?php echo $conf['compression']; ?>): </th>
+				<th id="compression">compression: </th>
 				<th id="actions"></th>
 			</tr>
 		</thead>
@@ -71,14 +72,14 @@ include_once "build.php";
 			<tr>
 				<td id="compression_container">
 					<ul>
-						<?php foreach($conf['available_compressions'] as $comp) { ?>
+						<?php foreach($depender->getCompressions() as $comp) { ?>
 						<li><label>
-							<input type="radio" name="compression" value="<?php echo $comp; ?>">
+							<input type="radio" name="compression" value="<?php echo $comp.'" '; if ( $comp === $depender->getDefaultCompression()) echo 'checked="checked"';?>>
 							<?php echo $comp; ?></label>
 						</li>
 						<?php } ?>
 						<li><label>
-							<input type="radio" name="compression" value="none"> 
+							<input type="radio" name="compression" value="">
 							none</label>
 						</li>
 					</ul>

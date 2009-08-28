@@ -1,246 +1,257 @@
 <?php
-$error = "";
-function lg($str) {
-	global $error;
-	$error = $error.$str."<br/>".PHP_EOL.PHP_EOL;
-}
-function encode($val){
-	return json_encode($val);
-}
-function decode($string){
-	return json_decode($string, true);
-}
-function readJson($string){
-	if (file_exists($string)) {
-		return decode(file_get_contents($string));
-	} else {
-		lg("could not find json file: ".$string);
+
+Class Depender {
+	const ConfigFilename  = 'config_example.json';
+	const ScriptsFilename = 'scripts.json';
+
+	const Post            = 'POST';
+	const Get             = 'GET';
+
+	const Yui             = 'yui';
+	const JSMin           = 'jsmin';
+
+	public function getConfig() {
+		return json_decode( file_get_contents( self::ConfigFilename ), True );
 	}
-}
-$conf = readJson("config.json");
-$sources = array();
-function getScripts(){
-	global $conf, $sources;
-	$data = array();
-	foreach($conf["libs"] as $source => $props){
-		$sources[$source] = readJson($props["scripts"]."/scripts.json");
-		foreach($sources[$source] as $dir => $files) {
-			foreach($files as $file => $fileprops) {
-				$data[$file] = array();
-				$data[$file]["path"] = $props["scripts"]."/".$dir."/".$file.".js";
-				$data[$file]["deps"] = $fileprops["deps"];
+
+	public function getLibraries() {
+		$all      = Array();
+		$config  = $this->getConfig();
+		foreach($config['libs'] as $libraryName => $library) {
+			$scripts           = $this->getScriptsFromLibraryName($libraryName);
+			$all[$libraryName] = $scripts;
+		}
+		return $all;
+	}
+
+	private function getScriptsFromLibraryName($name) {
+		$config  = $this->getConfig();
+		$library = $config['libs'][$name];
+		return json_decode(file_get_contents($library['scripts'].'/'.self::ScriptsFilename), True);
+	}
+
+	private function getScriptsNamesFromLibrary($library) {
+		$all = Array();
+		foreach($library as $categoryName => $scripts) {
+			foreach($scripts as $scriptName => $script) {
+				$all[] = $scriptName;
 			}
 		}
+		return $all;
 	}
-	return $data;
-}
-$scriptMap = getScripts();
 
-function merge_unique($ar1, $ar2) {
-	foreach($ar1 as $var) {
-		if (!in_array($var, $ar2)) array_push($ar2, $var);
+	public function getCompressions() {
+		$config = $this->getConfig();
+		return $config['available_compressions'];
 	}
-	return $ar2;
-}
-function computeDependencies($scripts, $data){
-	if (!is_array($scripts)) $scripts = array($scripts);
-	$deps = array();
-	foreach($scripts as $script) {
-		if (!isset($data[$script])) {
-			lg($script." could not be found in the dependency map.");
-		} else {
-			foreach($data[$script]["deps"] as $dep) {
-				if (!in_array($dep, $scripts)) $deps = merge_unique($deps, computeDependencies($dep, $data));
-			}
-			if (!in_array($script, $deps)) { array_push($deps, $script); }
+
+	public function getDefaultCompression() {
+		$config = $this->getConfig();
+		return $config['compression'];
+	}
+
+	public function getVar($name, $default = False) {
+		switch ($_SERVER['REQUEST_METHOD']) {
+			case self::Post:
+				$var = $_POST[$name];
+				break;
+			case self::Get:
+				$var = $_GET[$name];
+				break;
 		}
-	}
-	return $deps;
-}
-function curPageURL() {
-	$pageURL = 'http';
-	if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]) {$pageURL .= "s";}
-	$pageURL .= "://";
-	if ($_SERVER["SERVER_PORT"] != "80") {
-		$pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
-	} else {
-		$pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
-	}
-	return str_replace('&download=true', '', $pageURL);
-}
 
-function parseArray($str) {
-	$ret = array();
-	if (!is_array($str)) {
-		if (strpos($str, ",") >=0) {
-			$vals = explode(",", $str);
-			foreach($vals as $val) {
-				$ret[] = trim($val);
-			}
-		} else {
-			$ret[] = $str;
+		if ( !$var ) {
+			return $default;
 		}
-	} else {
-		$ret = $str;
+		return $var;
 	}
-	return $ret;
-}
 
-function build() {
-	global $conf, $scriptMap, $sources, $error;
-	$require = array();
-	$exclude = array();
-	if (getVar('requireLibs')) {
-		$requireLibs = parseArray(getVar('requireLibs'));
-		foreach($requireLibs as $lib) {
-			foreach($sources[$lib] as $dir => $files) {
-				foreach($files as $file => $fileprops) {
-					$require[] = $file;
+	private function getFlatData() {
+		$config  = $this->getConfig();
+		$flat    = Array();
+		$all     = Array();
+		$cacheId = 'flat';
+		$cached  = $this->getCache($cacheId);
+		if ($cached) {
+			return $cached;
+		}
+		foreach($config['libs'] as $libraryName => $library) {
+			$scripts = $this->getScriptsFromLibraryName($libraryName);
+
+			foreach($scripts as $categoryName => $categotyScripts) {
+
+				foreach($categotyScripts as $scriptName => $script) {
+					$script['library']  = $libraryName;
+					$script['category'] = $categoryName;
+					$script['name']     = $scriptName;
+					$script['path']     = $library['scripts'].'/'.$script['category'].'/'.$script['name'].'.js';
+					$all[$scriptName]   = $script;
 				}
 			}
 		}
+		$this->setCache($cacheId, $all);
+		return $all;
 	}
-	if (getVar('excludeLibs')) {
-		$excludeLibs = parseArray(getVar('excludeLibs'));
-		foreach($excludeLibs as $lib) {
-			foreach($sources[$lib] as $dir => $files) {
-				foreach($files as $file => $fileprops) {
-					$exclude[] = $file;
-				}
-			}
+
+	private function getDependencies($script) {
+		$scripts = $this->getFlatData();
+		$deps = $scripts[$script]['deps'];
+		if (is_array($deps)) {
+			return $deps;
+		} else {
+			return Array();
 		}
 	}
-	
-	$reqs = getVar('require');
-	if ($reqs) {
-		$reqs = parseArray($reqs);
-		$require = merge_unique($reqs, $require);
-	}
-	$exs = getVar('exclude');
-	if ($exs) {
-		$exs = parseArray($exs);
-		$exclude = merge_unique($exs, $exclude);
-	}
-	
-	$cache = ($conf["cache"] == "true");
-	if (getVar('noCache')) $cache = false;
-	$compression = $conf["compression"];
-	if (getVar('compression')) $compression = getVar('compression');
-	if ($compression != "none" && !in_array($compression, $conf["available_compressions"])) {
-		if(count($conf["available_compressions"]) > 0) $compression = $conf["available_compressions"][0];
-		else $compression = "none";
-	}
-	
-	$deps = computeDependencies($require, $scriptMap);
-	$output = array();
-	$output_contents = array();
-	$paths = array();
-	
-	foreach($deps as $dep) {
-		if (!in_array($dep, $exclude) && file_exists($scriptMap[$dep]["path"])) $output_contents[] = $dep;
+
+	private function getScriptFile($scriptName, $compression=False) {
+		$flat      = $this->getFlatData();
+		$script    = $flat[$scriptName];
+		if (!is_array($script)) {
+			return '';
+		}
+
+		$atime     = fileatime($script['path']);
+		$cacheId   = $script['name'].'_'.$atime.'_'.$compression;
+		$cached    = $this->getCache($cacheId);
+		if ($cached) {
+			return $cached;
+		}
+
+		$contents  = file_get_contents($script['path']);
+
+		if ($compression) {
+			$contents = $this->compress($contents, $compression);
+		}
+		$this->setCache($cacheId, $contents);
+		return $contents;
 	}
 
-	$dirName = 'outputs/'.md5(join($output_contents, '-'));
-	$fileName = $dirName.'/'.'script';
-	$uncompressed = $fileName.'_uncompressed.js';
-	
-	if (getVar('download')) {
-		header('Content-Disposition: attachment; filename="built.js"');
-	} else {
-		header("Content-Type: application/x-javascript");
+	public function compress($string, $compression) {
+		include_once('compressors/'.$compression.'.php');
+		$compressed = call_user_func_array($compression, array($string));
+		return $compressed;
 	}
 
-	switch($compression) {
-		case 'yui':
-			$fileName = $fileName.'_yui_compressed.js';
-			break;
-		case 'jsmin':
-			$fileName = $fileName.'_jsmin_compressed.js';
-			break;
-		case 'none':
-			$fileName = $fileName.'_uncompressed.js';
-			break;
-	}
-	if (file_exists($fileName) && $cache) {
-		$responseName = join($require, '-').'.js';
-		echo $error.file_get_contents($fileName);
-		return;
+	public function header() {
+		header('Cache-Control: must-revalidate');
+		if ($this->getVar('download')) {
+			header('Content-Disposition: attachment; filename="built.js"');
+		} else {
+			header("Content-Type: application/x-javascript");
+		}
 	}
 
-	foreach($output_contents as $dep) {
-		$output[] = file_get_contents($scriptMap[$dep]["path"]);
+	private function getPageUrl() {
+		$pageURL = 'http';
+		if (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]) {$pageURL .= "s";}
+		$pageURL .= "://";
+		if ($_SERVER["SERVER_PORT"] != "80") {
+			$pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+		} else {
+			$pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+		}
+		return str_replace('&download=true', '', $pageURL);
 	}
 
-	if (count($output_contents) > 0) {
-		if (!is_dir($dirName)) mkdir($dirName);
-		$breaks = PHP_EOL.PHP_EOL;
-		$header = join($conf["copyright"], $breaks).$breaks."//Contents: ".join($output_contents,', ').$breaks;
-		$header = $header.'//This lib: '.curPageURL().$breaks;
+	private function setCache($id, $value) {
+		$file = fopen('cache/'.$id, 'w+');
+		$result = fwrite($file, serialize($value));
+		fclose($file);
+		return $result;
+	}
 
-		$build = join($output, $breaks);
-		
-		writeFile('{ "contents": '.encode($output_contents).'}', $dirName.'/contents.json');
-		
-		writeFile($header.$build, $uncompressed);
+	private function getCache($id) {
+		$file = 'cache/'.$id;
+		if (file_exists($file)) {
+			return unserialize(file_get_contents($file));
+		} else {
+			return False;
+		}
+	}
 
-		if ($compression != "none") {
-			if ($compression == "yui") {
-				$build = join(compress_yui($uncompressed), PHP_EOL);
-				writeFile($header.$build, $fileName);
-			}
-			if ($compression == "jsmin") {
-				$build = compress_jsmin($build);
-				writeFile($header.$build, $fileName);
+	private function deleteCache($id) {
+		$file = 'cache/'.$id;
+		if (file_exists($file)) {
+			return unlink($file);
+		}
+	}
+
+	private function getLastModifiedDate($scripts) {
+		$max  = 0;
+		$flat = $this->getFlatData();
+		foreach($scripts as $scriptName) {
+			$script   = $flat[$scriptName];
+			$modified = fileatime($script['path']);
+			if ($modified > $max) {
+				$max = $modified;
 			}
 		}
-		$responseName = join($require, '-').'.js';
-	} else {
-		$responseName = "empty.js";
-		$header = "";
-		$build = "";
+		return $max;
 	}
-	echo $error.$header.$build;
 
-}
-function compress_yui($input){
-	loadLib('yui');
-	return yui($input);
+	public function build() {
+		$include     = $this->getVar('require') ? explode(',', $this->getVar('require')) : Array();
+		$exclude     = $this->getVar('exclude') ? explode(',', $this->getVar('exclude')) : Array();
+
+		$includeLibs = $this->getVar('requireLibs') ? explode(',', $this->getVar('requireLibs')) : Array();
+		$excludeLibs = $this->getVar('excludeLibs') ? explode(',', $this->getVar('excludeLibs')) : Array();
+
+		$this->header();
+
+		$libs        = $this->getLibraries();
+		$includes    = Array();
+		$excludes    = Array();
+		$config      = $this->getConfig();
+		$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
+		$out        .= '//This lib: '.$this->getPageUrl().PHP_EOL.PHP_EOL;
+
+		foreach($includeLibs as $includeLib) {
+			$library  = $libs[$includeLib];
+			foreach($this->getScriptsNamesFromLibrary($library) as $script) {
+				$includes   = array_merge($includes, $this->getDependencies($script));
+				$includes[] = $script;
+			}
+		}
+
+		foreach($include as $script) {
+			$includes   = array_merge($includes, $this->getDependencies($script));
+			$includes[] = $script;
+		}
+		$includes = array_unique($includes); //No duplicate
+
+		foreach($excludeLibs as $excludeLib) {
+			$library  = $libs[$excludeLib];
+			$excludes = array_merge($excludes, $this->getScriptsNamesFromLibrary($library));
+		}
+
+		foreach($exclude as $script) {
+			$excludes[] = $script;
+		}
+		$excludes = array_unique($excludes); //No duplicate
+
+		$includes = array_diff($includes, $excludes);
+
+
+		if ($_SERVER['HTTP_IF_MODIFIED_SINCE']) {
+			$browserCache = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
+			if ($browserCache >= $this->getLastModifiedDate($includes)) {
+				header('HTTP/1.1 304 Not Modified');
+				exit;
+			}
+		}
+
+		header('Last-modified: '.date('r', $this->getLastModifiedDate($includes)));
+
+		foreach($includes as $include) {
+			$out .= $this->getScriptFile($include, $this->getVar('compression'));
+		}
+
+		print $out;
+	}
 }
 
-function compress_jsmin($build){
-	loadLib('jsmin');
-	return jsmin($build);
-}
-
-function writeFile($output, $name) {
-	$fh = fopen($name, 'w') or die("can't open file");
-	fwrite($fh, $output);
-	fclose($fh);
-}
-function loadLib($lib) {
-	$file = "compressors/$lib.php";
-	if (file_exists($file)){
-		include_once $file;
-		return true;
-	}
-	return false;
-}
-//build("Array", "Core");
-function getVar($var) {
-	switch($_SERVER['REQUEST_METHOD']) {
-		case 'GET': $the_request = &$_GET; break;
-		case 'POST': $the_request = &$_POST; break;
-	}
-	if (isset($the_request[$var])) return $the_request[$var];
-	return false;
-}
-if (strpos($_SERVER["REQUEST_URI"], 'build.php')) {
-	global $error;
-	if (getVar('require') || getVar('requireLibs')) {
-		build();
-	} else {
-		header("Content-Type: application/x-javascript");
-		echo $error."//No scripts specified";
-	}
+$depender = New Depender;
+if ($depender->getVar('require') || $depender->getVar('requireLibs')) {
+	$depender->build();
 }
 ?>
