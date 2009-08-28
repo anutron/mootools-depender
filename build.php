@@ -188,22 +188,36 @@ Class Depender {
 		}
 		return $max;
 	}
+	
+	private function parseArray($str) {
+		$ret = array();
+		if (!is_array($str)) {
+			if (strpos($str, ",") >=0) {
+				$vals = explode(",", $str);
+				foreach($vals as $val) {
+					$ret[] = trim($val);
+				}
+			} else {
+				$ret[] = $str;
+			}
+		} else {
+			$ret = $str;
+		}
+		return $ret;
+	}
 
 	public function build() {
-		$include     = $this->getVar('require') ? explode(',', $this->getVar('require')) : Array();
-		$exclude     = $this->getVar('exclude') ? explode(',', $this->getVar('exclude')) : Array();
+		$include     = $this->getVar('require') ? $this->parseArray($this->getVar('require')) : Array();
+		$exclude     = $this->getVar('exclude') ? $this->parseArray($this->getVar('exclude')) : Array();
 
-		$includeLibs = $this->getVar('requireLibs') ? explode(',', $this->getVar('requireLibs')) : Array();
-		$excludeLibs = $this->getVar('excludeLibs') ? explode(',', $this->getVar('excludeLibs')) : Array();
+		$includeLibs = $this->getVar('requireLibs') ? $this->parseArray($this->getVar('requireLibs')) : Array();
+		$excludeLibs = $this->getVar('excludeLibs') ? $this->parseArray($this->getVar('excludeLibs')) : Array();
 
 		$this->header();
 
 		$libs        = $this->getLibraries();
 		$includes    = Array();
 		$excludes    = Array();
-		$config      = $this->getConfig();
-		$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
-		$out        .= '//This lib: '.$this->getPageUrl().PHP_EOL.PHP_EOL;
 
 		foreach($includeLibs as $includeLib) {
 			$library  = $libs[$includeLib];
@@ -230,6 +244,12 @@ Class Depender {
 		$excludes = array_unique($excludes); //No duplicate
 
 		$includes = array_diff($includes, $excludes);
+
+		$config      = $this->getConfig();
+		$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
+		$out        .= '//Contents: '.join($includes, ', ').PHP_EOL.PHP_EOL;
+		$out        .= '//This lib: '.$this->getPageUrl().PHP_EOL.PHP_EOL;
+
 
 
 		if ($_SERVER['HTTP_IF_MODIFIED_SINCE']) {
