@@ -20,16 +20,26 @@ Class Depender {
 		$all      = Array();
 		$config  = $this->getConfig();
 		foreach($config['libs'] as $libraryName => $library) {
-			$scripts           = $this->getScriptsFromLibrary($libraryName);
+			$scripts           = $this->getScriptsFromLibraryName($libraryName);
 			$all[$libraryName] = $scripts;
 		}
 		return $all;
 	}
 
-	private function getScriptsFromLibrary($name) {
+	private function getScriptsFromLibraryName($name) {
 		$config  = $this->getConfig();
 		$library = $config['libs'][$name];
 		return json_decode(file_get_contents($library['scripts'].'/'.self::ScriptsFilename), True);
+	}
+
+	private function getScriptsNamesFromLibrary($library) {
+		$all = Array();
+		foreach($library as $categoryName => $scripts) {
+			foreach($scripts as $scriptName => $script) {
+				$all[] = $scriptName;
+			}
+		}
+		return $all;
 	}
 
 	public function getCompressions() {
@@ -68,7 +78,7 @@ Class Depender {
 			return $cached;
 		}
 		foreach($config['libs'] as $libraryName => $library) {
-			$scripts = $this->getScriptsFromLibrary($libraryName);
+			$scripts = $this->getScriptsFromLibraryName($libraryName);
 
 			foreach($scripts as $categoryName => $categotyScripts) {
 
@@ -169,35 +179,45 @@ Class Depender {
 	}
 
 	public function build() {
-		$include     = explode(',', $this->getVar('require', Array()));
-		$exclude     = explode(',', $this->getVar('exclude', Array()));
-		$includeLibs = explode(',', $this->getVar('requireLibs', Array()));
-		$excludeLibs = explode(',', $this->getVar('excludeLibs', Array()));
+		$include     = $this->getVar('require') ? explode(',', $this->getVar('require')) : Array();
+		$exclude     = $this->getVar('exclude') ? explode(',', $this->getVar('exclude')) : Array();
+
+		$includeLibs = $this->getVar('requireLibs') ? explode(',', $this->getVar('requireLibs')) : Array();
+		$excludeLibs = $this->getVar('excludeLibs') ? explode(',', $this->getVar('excludeLibs')) : Array();
+
 		$libs        = $this->getLibraries();
-		$deps        = Array();
+		$includes    = Array();
+		$excludes    = Array();
 		$config      = $this->getConfig();
 		$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
 		$out        .= '//This lib: '.$this->getPageUrl().PHP_EOL.PHP_EOL;
 
 		foreach($includeLibs as $includeLib) {
-			$library = $libs[$includeLib];
-
-			foreach($library as $categoryName => $scripts) {
-				foreach($scripts as $scriptName => $script) {
-					$deps[] = $scriptName;
-				}
-			}
+			$library  = $libs[$includeLib];
+			$includes = array_merge($includes, $this->getScriptsNamesFromLibrary($library));
 		}
-
 		foreach($include as $script) {
-			$deps = array_merge($deps, $this->getDependencies($script));
-			$deps[] = $script;
+			$includes   = array_merge($includes, $this->getDependencies($script));
+			$includes[] = $script;
+		}
+		$includes = array_unique($includes); //No duplicate
+
+		foreach($excludeLibs as $excludeLib) {
+			$library  = $libs[$excludeLib];
+			$excludes = array_merge($excludes, $this->getScriptsNamesFromLibrary($library));
 		}
 
-		$deps = array_unique($deps); //No duplicate
+		foreach($exclude as $script) {
+			$excludes[] = $script;
+		}
+		$excludes = array_unique($excludes); //No duplicate
 
-		foreach($deps as $dep) {
-			$out .= $this->getScriptFile($dep, $this->getVar('compression'));
+		$includes = array_diff($includes, $excludes);
+
+		print_r($includes);
+
+		foreach($includes as $include) {
+			$out .= $this->getScriptFile($include, $this->getVar('compression'));
 		}
 
 		print $out;
