@@ -112,6 +112,8 @@ $depender = New Depender;
 		<p>To get your library, you can download the file directly by clicking "Download." You can, alternately, copy the url to the file or copy the script tag for the url. This will pull the build library from the builder every time it is requested. If caching is enabled compressed libraries will be cached (to disk) to improve performance. Sites with high performance needs will likely want to implement a more robust caching system such as <a href="http://www.danga.com/memcached/">memcached</a>.</p>
 		<h3>Output</h3>
 		<p>Scripts output by this library include in their header comments a list of all files they include as well as a url that can be used to recreate them.</p>
+		<h3>Configuration</h3>
+		<p>See <a href="http://github.com/anutron/mootools-depender/tree/master#readme" target="readme">the readme on github</a>.</p>
 	</div>
 </div>
 <div id="warn_url">
