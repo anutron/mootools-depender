@@ -10,7 +10,7 @@ Included in this distribution is a file named "config_example.json" which, if co
 * copyright - A string prepended to the beginning of all files built by the app. Defaults to the copyrights for the default libraries (MooTools Core & MooTools More)
 * compression - The default compression to use. Values can be "yui", "jsmin", or "none" - defaults to "yui"; see compression section below for more details on compression.
 * available_compressions - Supported compression types - defaults to both "yui", and "jsmin"; not all systems are set up to allow java executables at the command line (as on certain low-end hosting providers) so you may wish to disable yui.
-* cache - Enables/disables caching of compressed files. Defaults to "true". See section below on caching for more details.
+* cache scripts.json - When *true* the app will cash the values in the scripts.json files in your libraries and improve performance. The down side is that if you change the scripts.json, you must refresh the cache by hitting */depender/build.php?reset=true*.
 * libs - an object pointing to each library that the builder should support. Each entry has a setting for "scripts" which points to the directory that contains *scripts.json*. From the example file:
 
 		"libs": {
@@ -21,6 +21,10 @@ Included in this distribution is a file named "config_example.json" which, if co
 				"scripts": "libs/more/Source"
 			}
 		}
+
+### Notes
+
+* No two scripts in any of the libs should have the same name. So if one library has *Foo.js*, no other library should have a script with the same name. This is a remnant of the MooTools scripts.json, which wasn't designed originally to work with other scripts.json files. This naming requirement will be removed with MooTools 2.0.
 
 Initialization
 --------------
@@ -58,7 +62,7 @@ In addition to these headers, each directory has a file entitled *contents.json*
 
 Caching
 -------
-The setting in config.json for caching controls whether libraries are rebuilt every time they are requested. If set to *true*, the default, every request for a set of requirements will check to see if the library has been built before and return the contents of that library if true. Disabling caching is very useful for development.
+The setting in config.json for caching scripts.json controls whether the map of scripts is rebuilt on every request. Performance will improve if this is set to *false*, but the down side is any changes to scripts.json will not be reflected unless you clear the cache. This can be achieved by requesting */depender/build.php?reset=true*.
 
 Requests and Query String Values
 --------------------------------
@@ -74,6 +78,11 @@ In addition to the four values you can specify for the contents of the file, you
 
 * cache - if set to *true* you'll be returned a cached version of the script even if the server is set to *false* and vice versa.
 * compression - you'll be returned the compression type you specify regardless of the server default. Note that if you specify a compression type that the server does not allow, you'll be returned which ever one it does. If it does not support compression at all, you will not be returned a compressed file. You can also specify "none" which is useful for development and debugging.
+
+The Depender Client
+-------------------
+MooTools More includes a client side component that integrates with this server. It allows you to interact with the server in your application code, requiring components and executes a callback when the load. See [the docs for the client for details](http://mootools.net/docs/more/Core/Depender.Client).
+
 
 File System Caching vs Other Options
 ------------------------------------

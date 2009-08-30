@@ -65,6 +65,7 @@ $depender = New Depender;
 		<thead>
 			<tr>
 				<th id="compression">compression: </th>
+				<th></th>
 				<th id="actions"></th>
 			</tr>
 		</thead>
@@ -83,6 +84,10 @@ $depender = New Depender;
 							none</label>
 						</li>
 					</ul>
+				</td>
+				<td id="client">
+					integrate depender client:
+					<input type="checkbox" name="client" value="true"/>
 				</td>
 				<td id="action_list">
 					<ul>

@@ -179,6 +179,12 @@ h1 .button {
 #controls ul li {
 	float: left;
 }
+#client {
+	color: #fff;
+}
+#controls #compression {
+	width: 200px;
+}
 #controls #compression_container li {
 	padding: 0px 10px 0px 2px;
 	color: #fff;
