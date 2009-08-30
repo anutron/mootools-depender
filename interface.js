@@ -77,6 +77,7 @@ var Interface = {
 		return true;
 	},
 	reset: function(){
+		$$('div.includes input').set('checked', false);
 		$$('li').each(function(li){
 			li.removeClass('required').removeClass('checked').removeClass('excluded');
 		});
