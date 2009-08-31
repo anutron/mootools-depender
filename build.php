@@ -234,11 +234,11 @@ Class Depender {
 
 	private function dependerJs($scripts) {
 		$out = PHP_EOL.PHP_EOL;
-		$out .= "Depender.loaded.combine(['".join($scripts, "','")."'])".PHP_EOL;
+		$out .= "Depender.loaded.combine(['".join($scripts, "','")."']);".PHP_EOL;
 		$out .= "Depender.setOptions({".PHP_EOL;
 		$url = split("\?", $this->getPageUrl());
 		$out .= "	builder: '".$url[0]."'".PHP_EOL;
-		$out .= "})";
+		$out .= "});";
 		return $out;
 	}
 
