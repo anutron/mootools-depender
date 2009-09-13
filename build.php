@@ -18,6 +18,8 @@ Class Depender {
 		$file = self::ConfigFilename;
 		$this->checkFile($file);
 		self::$config = json_decode( file_get_contents( $file ), True );
+		self::$config['libs']['depender-client'] = Array();
+		self::$config['libs']['depender-client']['scripts'] = 'client/Source';
 		return self::$config;
 	}
 	
@@ -35,6 +37,7 @@ Class Depender {
 		return $all;
 	}
 
+	//decode scripts.json for a given library
 	private function getScriptsFromLibraryName($name) {
 		$config  = $this->getConfig();
 		$library = $config['libs'][$name];
@@ -43,6 +46,7 @@ Class Depender {
 		return json_decode(file_get_contents($file), True);
 	}
 
+	//returns a list of all scripts in a library
 	private function getScriptsNamesFromLibrary($library) {
 		$all = Array();
 		foreach($library as $categoryName => $scripts) {
@@ -80,6 +84,7 @@ Class Depender {
 		return $var;
 	}
 
+	//serialize and cache dependency map
 	private function getFlatData() {
 		if (isset(self::$flat)) return self::$flat;
 		$config  = $this->getConfig();
@@ -287,8 +292,6 @@ Class Depender {
 		$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
 		$out        .= '//Contents: '.join($includes, ', ').PHP_EOL.PHP_EOL;
 		$out        .= '//This lib: '.$this->getPageUrl().PHP_EOL.PHP_EOL;
-
-
 
 		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
 			$browserCache = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
