@@ -1,7 +1,7 @@
-Singleton: Depender {#Depender}
+Object: Depender {#Depender}
 ==========================
 
-Loads dependencies from MooTools script repositories via the [Depender Sever][].
+Loads dependencies from MooTools script repositories via the [Depender Server][].
 
 ### Implements:
 
@@ -10,18 +10,18 @@ Loads dependencies from MooTools script repositories via the [Depender Sever][].
 Depender Method: setOptions {#Depender:setOptions}
 --------------------------------------------------
 
-This is the setOptions method from [Options][]. As Depender is not a class, you must call this method directly to configure it.
+This is the setOptions method from [Options][]. As Depender is not an instance of a class, you must call this method directly to configure it.
 
 ### Options
 
 * target - (*mixed*) A DOM Element or its ID - the target where the scripts are to be injected. Defaults to *document.head*.
-* builder - (*string*) The url to the server app (e.g. */depender/build.php*). If you load Depender itself via the the builder, this is set automatically for you. If this is not set, Depender will not function.
+* builder - (*string*) The url to the server app (e.g. */depender/build.php*). If you load Depender itself via the the builder, this is set automatically for you. If this is not set, the Depender Client will not function.
 
 ### Events
 
 * onRequire - (*function*) callback executed whenever new requirements are passed in to be loaded. Passed the object that is passed to the [require][] method.
-* requirementLoaded - (*function*) callback executed when a requirement is loaded. Passed a list of the currently loaded scripts and the object that is passed to the [require][] method.
-* scriptLoaded - (*function*) callback executed whenever a script loads (i.e. at the same time as requirementLoaded; this is here for compatibility with the [stand alone Depender][]). Passed an object with the following properties:
+* onRequirementLoaded - (*function*) callback executed when a requirement is loaded. Passed a list of the currently loaded scripts and the object that is passed to the [require][] method.
+* onScriptLoaded - (*function*) callback executed whenever a script loads (i.e. at the same time as *onRequirementLoaded*; this is here for compatibility with the [stand alone Depender][]). Passed an object with the following properties:
 ** script: the scripts loaded (a comma delimited string), 
 ** totalLoaded: the % loaded of total dependencies, 
 ** currentLoaded: the % of the current batch (so if you required a script, then immediately required, say, two more while the first was still loaded, when the first script loaded this number would be "33" (%) because there are two left; note that the server is here to do this work for you; so it's more efficient to just do one request for the three requirements if possible), 
@@ -29,7 +29,7 @@ This is the setOptions method from [Options][]. As Depender is not a class, you 
 
 ### See also
 
-You might also consider the [stand alone Depender][], which is written entirely with JavaScript and manages all the dependencies without a server side component. It's slower, because it must request every script file individually, but has the benefit of not requiring your server to do anything other than serve up static files. Note that the stand alone version must be on the same domain as the scripts, while the server side version need not be.
+You might also consider the [stand alone Depender][], which is written entirely with JavaScript and manages all the dependencies without a server side component. It's slower, because it must request every script file individually, but has the benefit of not requiring your server to do anything other than serve up static files. Note that the stand alone version must be on the same domain as the scripts, while the server side version need not be (so long as it can read the script files in some way).
 
 Usage
 -----
@@ -66,7 +66,7 @@ Loads required scripts and executes a callback when they are ready. Note that th
 
 ### Returns
 
-* *object* - This instance of [Depender][].
+* *object* - the *Depender* object.
 
 Example Usage {#Depender:Example}
 ---------------------------------
@@ -81,32 +81,11 @@ Example Usage {#Depender:Example}
 			//note that there may still be others loading
 			$('loadingSpinner').setStyle('display', 'none');
 		}
-	}).include({
-		//add these resources
-		core: {
-			scripts: "/core/Source"
-		},
-		more: {
-			scripts: "/more/Source"
-		},
-		myproject: {
-			scripts: "/Source"
-		}
 	}).require({
 		scripts: ['DatePicker', 'Logger.Extended'], //array or single string for one item
 		sources: 'core', //include ALL of core; this can be an array or a single string for one item
 		callback: function() {
 			//your startup code that needs DatePicker and Logger.Extended
-			//this method will only run once, even if you require more
-			//scripts later
-		},
-		onStep: function(data){
-			//function executed every time a dependency of this specific requirement is loaded
-			//data is:
-			//{
-			//	percent: 1-100 percentage loaded of THIS requirement
-			//	scripts: array of all available scripts
-			//}
 		}
 	});
 	//later, you need to load more dependencies...
@@ -114,19 +93,16 @@ Example Usage {#Depender:Example}
 		scripts: 'Fx.Reveal', //array or single string for one item
 		callback: function(){
 			//if, for some reason, Fx.Reveal is available already,
-			//or it is loaded before the requirements for the previous
-			//require statements are met, then this function will load,
-			//meaning that it may run before the methods above
-			//UNLESS you set the *serial* option to *true*
+			//then this function will exeute immediately, otherwise it will
+			//wait for the requirements to load
 			$('someElement').reveal();
 		}
 	});
-
 
 
 [Events]: http://mootools.net/docs/core/Class/Class.Extras#Events
 [Options]: http://mootools.net/docs/core/Class/Class.Extras#Options
 [Request]: http://mootools.net/docs/core/Request/Request
 [require]: #Depender:require
-[Depender]: http://github.com/anutron/mootools-depender/tree/
+[Depender Server]: http://github.com/anutron/mootools-depender/tree/
 [stand alone Depender]: http://mootools.net/docs/more/Core/Depender

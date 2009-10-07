@@ -16,6 +16,7 @@ var Depender = {
 		/* 
 		onRequire: $empty(options),
 		onRequirementLoaded: $empty([scripts, options]),
+		onScriptLoaded: $empty(data)
 		target: null,
 		builder: '/depender/build.php'
 		*/

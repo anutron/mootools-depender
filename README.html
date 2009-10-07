@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<title>Depender - A MooTools Dependency Builder</title>
+		<link rel="stylesheet" href="styles/depender.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<style>
+		h1 {
+			margin: 0;
+		}
+		body {
+			padding: 40px 0px;
+		}
+		#bod {
+			margin: 0px 20px;
+		}
+		#links {
+			float: right;
+		}
+		li {
+			list-style: none;
+			text-indent: -20px;
+			padding-left: 10px;
+		}
+		p {
+			margin: 0 0 10px;
+		}
+		</style>
+		<script src="showdown.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+		function get(url, callback) {
+				var xmlHttpReq = false;
+				var self = this;
+				// Mozilla/Safari
+				if (window.XMLHttpRequest) {
+						self.xmlHttpReq = new XMLHttpRequest();
+				}
+				// IE
+				else if (window.ActiveXObject) {
+						self.xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				self.xmlHttpReq.open('GET', url, true);
+				self.xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				self.xmlHttpReq.onreadystatechange = function() {
+						if (self.xmlHttpReq.readyState == 4) {
+								callback(self.xmlHttpReq.responseText);
+						}
+				};
+				self.xmlHttpReq.send();
+		};
+		window.onload = function(){
+			get('README.md', function(text){
+				var converter = new Showdown.converter();
+				var html = converter.makeHtml(text);
+				document.getElementById('bod').innerHTML = html;
+				var readme = document.getElementById('readmeLink');
+				readme.parentNode.removeChild(readme);
+			});
+		};
+		</script>
+	</head>
+	<body>
+		<div id="links">
+			<ul style="margin: 20px">
+				<li id="readmeLink">See the <a href="README.md">ReadMe.md</a></li>
+				<li><a href="http://localhost:8000/depender/test">View the test for django</a>*</li>
+				<li><a href="http://localhost/depender/php/test.html">View the test for php</a>**</li>
+				<li><a href="http://localhost/depender/php/index.php">View the php chooser interface</a>**</li>
+			</ul>
+			<ul style="margin: 20px">
+				<li>* this links to localhost:8000; you may need to adjust it</li>
+				<li>** this links to localhost (port 80); you may need to adjust it</li>
+			</ul>
+		</div>
+		<div id="bod">
+		</div>
+	</body>
+</html>
