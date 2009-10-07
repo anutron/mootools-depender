@@ -49,7 +49,7 @@ var Depender = {
 			this.fireEvent('requirementLoaded', [this.loaded, options]);
 		}.bind(this);
 
-		var src = [this.options.builder + '?depender=true'];
+		var src = [this.options.builder + '?client=true'];
 
 		if (options.scripts) {
 			var scripts = $splat(options.scripts).filter(function(script) {
