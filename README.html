@@ -51,6 +51,7 @@
 			get('README.md', function(text){
 				var converter = new Showdown.converter();
 				var html = converter.makeHtml(text);
+				html = html.replace(/Depender\.Client\.md/g, 'index.html');
 				document.getElementById('bod').innerHTML = html;
 				var readme = document.getElementById('readmeLink');
 				readme.parentNode.removeChild(readme);

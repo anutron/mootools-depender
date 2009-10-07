@@ -111,7 +111,7 @@ In addition to the four values you can specify for the contents of the file, you
 
 The Depender Client
 -------------------
-The Depender app includes a client side component that integrates with this server. It allows you to interact with the server in your application code, requiring components and executes a callback when the load. See [the docs for the client for details](client/Docs/index.html).
+The Depender app includes a client side component that integrates with this server. It allows you to interact with the server in your application code, requiring components and executes a callback when the load. See [the docs for the client for details](client/Docs/Depender.Client.md).
 
 File System Caching vs Other Options
 ------------------------------------
