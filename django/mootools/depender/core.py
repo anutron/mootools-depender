@@ -34,9 +34,12 @@ class Depender(object):
     """
     creates instances of supported compressors (defaults only to YUI)
     """
-    self.compressors = {
+    self.supported_compressors = {
       "yui": YUI()
     }
+    self.compressors = {}
+    for compression in self.conf['available_compressions']:
+      if (self.supported_compressors.get(compression)): self.compressors[compression] = self.supported_compressors[compression]
     
   def relative(self, path):
     """
@@ -162,15 +165,11 @@ class Script(object):
     self.copyright = copyright
     self.debug = debug
     content = file(self.path).read()
-    #try:
-    #  content = unicode(source, "utf-8" )
-    #except UnicodeDecodeError:
-    #  content = unicode(source, "latin1" )
 
     self.compressed_content = {}
     if not self.debug:
       for compressor_name, compressor in compressors.iteritems():
-        LOG.info("compressing "+name+".js with "+compressor_name)
+        LOG.info("compressing %s.js with %s" %(name, compressor_name))
         self.compressed_content[compressor_name] = compressor.compress(name, content)
     self.compressed_content["none"] = content
     
