@@ -81,6 +81,8 @@ INSTALLED_APPS = (
 
 # Depender configuration
 import os
+import logging
+logging.basicConfig(level=logging.INFO)
 DEPENDER_ROOT = os.path.abspath(os.path.dirname(__file__) + "/..")
 DEPENDER_CONFIG_JSON = os.path.join(os.path.dirname(__file__), "../../config.json")
 DEPENDER_YUI_PATH = os.path.join(os.path.dirname(__file__), "../../compressors/yuicompressor-2.4.2.jar")
