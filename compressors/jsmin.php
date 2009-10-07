@@ -1,8 +1,7 @@
 <?php
 
-include_once 'compressors/jsmin-1.1.1.php';
-
-function jsmin($script){
+function jsmin($script, $path, $root){
+	include_once $root.'compressors/jsmin-1.1.1.php';
 	return JSMin::minify($script);
 }
 
