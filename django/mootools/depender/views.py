@@ -4,8 +4,13 @@
 # JavaScript files.
 
 import logging
+import datetime
+from email.Utils import mktime_tz, parsedate_tz
+import re
+import time
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotModified
+from django.utils.http import http_date
 from django.conf import settings
 
 from depender.core import Depender
@@ -17,6 +22,7 @@ def make_depender():
   return depender
 
 depender = make_depender()
+server_started = time.time()
 
 def build(request):
   """
@@ -51,12 +57,12 @@ def build(request):
   compression = get("compression")
 
   dpdr = None
+  global depender
   if settings.DEPENDER_DEBUG:
     dpdr = make_depender()
   else:
     dpdr = depender
   if reset == "true":
-    global depender
     depender = dpdr
     
   if compression is None:
@@ -64,6 +70,11 @@ def build(request):
   if settings.DEPENDER_DEBUG:
     compression = "none"
 
+  last_modified_header = request.META.get('HTTP_IF_MODIFIED_SINCE')
+  LOG.info("last mondified header: " + str(last_modified_header))
+  if (last_modified_header and extract_last_modified_time(last_modified_header) >= server_started
+      and not settings.DEPENDER_DEBUG and not reset == "true"):
+    return HttpResponseNotModified()
 
   if client == "true" and require.count("Depender.Client") == 0:
     require.append("Depender.Client")
@@ -85,7 +96,6 @@ def build(request):
     output += ", ".join([ i.name for i in includes ])
     output += "\n\n"
   
-    # TODO(philip): Make this not manual.
     location = request.META["SERVER_PROTOCOL"].split("/")[0].lower() + "://" + request.META["HTTP_HOST"] + request.path
     args = request.META["QUERY_STRING"]
     if args.find("download=") >= 0:
@@ -106,13 +116,25 @@ def build(request):
       output += dpdr.get_client_js(includes, location)
 
   response = HttpResponse(output, content_type="application/x-javascript")
+  response["Last-Modified"] = http_date(server_started)
+  
   if (download == "true"):
     response['Content-Disposition'] = 'attachment; filename=built.js'
   return response
 
 build.login_notrequired = True
 
+def extract_last_modified_time(header):
+  """
+  Extracts time from the HTTP_IF_MODIFIED_SINCE header.
+  Based on django's django.static.views:was_modified_since
+  """
+  LOG.info('header: ', header)
+  matches = re.match(r"^([^;]+)(; length=([0-9]+))?$", header, re.IGNORECASE)
+  header_mtime = mktime_tz(parsedate_tz(matches.group(1)))
+  header_len = matches.group(3)
+
+
 def test(request):
   #this seems silly
-  return HttpResponse(file(ROOT + '/static/index.html').read())
-test.login_notrequired = True
+  return HttpResponse(file(settings.DEPENDER_ROOT + '/mootools/depender/static/test.html').read())
