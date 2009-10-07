@@ -1,7 +1,8 @@
 <?php
 
 Class Depender {
-	const ConfigFilename  = 'config.json';
+	const ConfigFilename  = '../config.json';
+	const FileRoot        = '../';
 	const ScriptsFilename = 'scripts.json';
 
 	const Post            = 'POST';
@@ -13,13 +14,13 @@ Class Depender {
 	private static $config;
 	private static $flat;
 	
-	public function getConfig() {
-		if (isset(self::$config)) return self::$config;
+	public function getConfig($reset=false) {
+		if (isset(self::$config) && !$reset) return self::$config;
 		$file = self::ConfigFilename;
 		$this->checkFile($file);
 		self::$config = json_decode( file_get_contents( $file ), True );
 		self::$config['libs']['depender-client'] = Array();
-		self::$config['libs']['depender-client']['scripts'] = 'client/Source';
+		self::$config['libs']['depender-client']['scripts'] = '../client/Source';
 		return self::$config;
 	}
 	
@@ -139,7 +140,7 @@ Class Depender {
 			return '';
 		}
 
-		$atime     = fileatime($script['path']);
+		$atime     = filemtime($script['path']);
 		$cacheId   = $script['name'].'_'.$atime.'_'.$compression;
 		$cached    = $this->getCache($cacheId);
 		if ($cached) {
@@ -147,19 +148,18 @@ Class Depender {
 		}
 
 		$contents  = file_get_contents($script['path']);
-
-		if ($compression) {
-			$contents = $this->compress($contents, $compression);
+		if ($compression && $compression != "none") {
+			$contents = $this->compress($contents, $script['path'], $compression);
 		}
 		$this->setCache($cacheId, $contents);
 		return $contents;
 	}
 
-	public function compress($string, $compression) {
-		$file = 'compressors/'.$compression.'.php';
+	public function compress($string, $path, $compression) {
+		$file = self::FileRoot.'compressors/'.$compression.'.php';
 		$this->checkFile($file);
 		include_once($file);
-		$compressed = call_user_func_array($compression, array($string));
+		$compressed = call_user_func_array($compression, array($string, $path, self::FileRoot));
 		return $compressed;
 	}
 
@@ -212,7 +212,7 @@ Class Depender {
 		$flat = $this->getFlatData();
 		foreach($scripts as $scriptName) {
 			$script   = $flat[$scriptName];
-			$modified = fileatime($script['path']);
+			$modified = filemtime($script['path']);
 			if ($modified > $max) {
 				$max = $modified;
 			}
@@ -249,7 +249,12 @@ Class Depender {
 
 	public function build() {
 
-		if ($this->getVar('reset')) $this->deleteCache('flat');
+		if ($this->getVar('reset')) {
+			$this->deleteCache('flat');
+			$config = $this->getConfig(true);
+		} else {
+			$config = $this->getConfig();
+		}
 
 		$include     = $this->getVar('require') ? $this->parseArray($this->getVar('require')) : Array();
 		$exclude     = $this->getVar('exclude') ? $this->parseArray($this->getVar('exclude')) : Array();
@@ -288,9 +293,20 @@ Class Depender {
 
 		$includes = array_diff($includes, $excludes);
 
-		$config      = $this->getConfig();
-		$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
-		$out        .= '//Contents: '.join($includes, ', ').PHP_EOL.PHP_EOL;
+		//$out         = join($config['copyright'], PHP_EOL).PHP_EOL.PHP_EOL;
+		
+		$out = "";
+		
+		$copyWritten = array();
+		
+		foreach($includes as $script) {
+			if (isset($config['libs'][self::$flat[$script]['library']]['copyright']) && !isset($copyWritten[self::$flat[$script]['library']])) {
+				$copyWritten[self::$flat[$script]['library']] = true;
+				$out .= $config['libs'][self::$flat[$script]['library']]['copyright'].PHP_EOL;
+			}
+		}
+		
+		$out        .= PHP_EOL.'//Contents: '.join($includes, ', ').PHP_EOL.PHP_EOL;
 		$out        .= '//This lib: '.$this->getPageUrl().PHP_EOL.PHP_EOL;
 
 		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
@@ -303,8 +319,9 @@ Class Depender {
 
 		header('Last-modified: '.date('r', $this->getLastModifiedDate($includes)));
 
+		$compression = $this->getVar('compression', $config['compression']);
 		foreach($includes as $include) {
-			$out .= $this->getScriptFile($include, $this->getVar('compression'));
+			$out .= $this->getScriptFile($include, $compression);
 		}
 
 		if (in_array('Depender.Client', $includes) || $this->getVar('client')) $out .= $this->dependerJs($includes);
