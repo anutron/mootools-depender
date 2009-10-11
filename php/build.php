@@ -25,7 +25,7 @@ Class Depender {
 	}
 	
 	private function checkFile($file) {
-		if (!file_exists($file)) die('Could not load file: '.$file);
+		if (!file_exists($file)) die('Could not load file: '. realpath($file));
 	}
 
 	public function getLibraries() {
@@ -55,6 +55,7 @@ Class Depender {
 	//returns a list of all scripts in a library
 	private function getScriptsNamesFromLibrary($library) {
 		$all = Array();
+		if(!isset($library)) die($library. ' not a valid library. (Check your config file)');
 		foreach($library as $categoryName => $scripts) {
 			foreach($scripts as $scriptName => $script) {
 				$all[] = $scriptName;
@@ -104,7 +105,7 @@ Class Depender {
 		}
 		foreach($config['libs'] as $libraryName => $library) {
 			$scripts = $this->getScriptsFromLibraryName($libraryName);
-
+			if(!is_array($scripts)) die($libraryName. ' scripts.json file did not parse correctly. (Located at ' . realpath($this->addRoot($library['scripts']).'/'.self::ScriptsFilename) . ')');
 			foreach($scripts as $categoryName => $categotyScripts) {
 
 				foreach($categotyScripts as $scriptName => $script) {

@@ -173,7 +173,7 @@ var Interface = {
 		reqs = reqs || [];
 		if (script == 'None' || !script || $(script).hasClass('libexcluded')) return reqs;
 		script = $(script);
-		var deps = script.get('deps').split(',');
+		var deps = script.get('deps')?script.get('deps').split(',') : [];
 		var id = script.get('id');
 		deps.each(function(scr){
 			if (scr == id || scr == 'None' || !scr) return;
