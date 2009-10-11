@@ -1,14 +1,16 @@
 {
-	"copyright": ["//MooTools, <http://mootools.net>, My Object Oriented (JavaScript) Tools. Copyright (c) 2006-2009 Valerio Proietti, <http://mad4milk.net>, MIT Style License.","//MooTools More, <http://mootools.net/more>. Copyright (c) 2006-2009 Aaron Newton <http://clientcide.com/>, Valerio Proietti <http://mad4milk.net> & the MooTools team <http://mootools.net/developers>, MIT Style License.","//Clientcide Scripts, <http://clientcide.com/js> Copyright (c) 2006-2009 Aaron Newton, MIT Style License."],
-	"compression": "none",
-	"available_compressions": ["yui", "jsmin"],
 	"libs": {
 		"mootools-core": {
+			"copyright": "//MooTools, <http://mootools.net>, My Object Oriented (JavaScript) Tools. Copyright (c) 2006-2009 Valerio Proietti, <http://mad4milk.net>, MIT Style License.",
 			"scripts": "libs/core/Source"
 		},
 		"mootools-more": {
+			"copyright": "//MooTools More, <http://mootools.net/more>. Copyright (c) 2006-2009 Aaron Newton <http://clientcide.com/>, Valerio Proietti <http://mad4milk.net> & the MooTools team <http://mootools.net/developers>, MIT Style License.",
 			"scripts": "libs/more/Source"
 		}
 	},
+	"compression": "none",
+	"available_compressions": ["yui", "jsmin"],
+
 	"php: cache scripts.json": false
 }
