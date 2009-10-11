@@ -20,7 +20,7 @@ Class Depender {
 		$this->checkFile($file);
 		self::$config = json_decode( file_get_contents( $file ), True );
 		self::$config['libs']['depender-client'] = Array();
-		self::$config['libs']['depender-client']['scripts'] = '../client/Source';
+		self::$config['libs']['depender-client']['scripts'] = 'client/Source';
 		return self::$config;
 	}
 	
@@ -38,11 +38,16 @@ Class Depender {
 		return $all;
 	}
 
+	private function addRoot($path) {
+		if (strpos($path, '/') != 0) return self::FileRoot.$path;
+		return $path;
+	}
+
 	//decode scripts.json for a given library
 	private function getScriptsFromLibraryName($name) {
 		$config  = $this->getConfig();
 		$library = $config['libs'][$name];
-		$file = $library['scripts'].'/'.self::ScriptsFilename;
+		$file = $this->addRoot($library['scripts']).'/'.self::ScriptsFilename;
 		$this->checkFile($file);
 		return json_decode(file_get_contents($file), True);
 	}
@@ -93,7 +98,7 @@ Class Depender {
 		$all     = Array();
 		$cacheId = 'flat';
 		$cached  = $this->getCache($cacheId);
-		if ($cached && $config['cache scripts.json']) {
+		if ($cached && isset($config['php: cache scripts.json']) && $config['php: cache scripts.json']) {
 			self::$flat = $cached;
 			return $cached;
 		}
@@ -106,7 +111,7 @@ Class Depender {
 					$script['library']  = $libraryName;
 					$script['category'] = $categoryName;
 					$script['name']     = $scriptName;
-					$script['path']     = $library['scripts'].'/'.$script['category'].'/'.$script['name'].'.js';
+					$script['path']     = $this->addRoot($library['scripts']).'/'.$script['category'].'/'.$script['name'].'.js';
 					$all[$scriptName]   = $script;
 				}
 			}
@@ -329,6 +334,8 @@ Class Depender {
 		print $out;
 	}
 }
+date_default_timezone_set('UTC');
+
 if (!file_exists('cache')) mkdir('cache');
 $depender = New Depender;
 if ($depender->getVar('require') || $depender->getVar('requireLibs') || $depender->getVar('client')) {
