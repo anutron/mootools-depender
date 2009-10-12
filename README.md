@@ -19,13 +19,15 @@ This application comes in two forms: a PHP version and a Django/Python version. 
 
 The PHP version of the application is very easy to deploy (just drop it into a directory in your webserver's htdocs and hit it with your browser). It also ships with a download builder interface that allows you to view the files available, click the dependencies you require and download the library. However, the PHP version is less performant than the Django version, and if you plan on deploying this server for applications to pull JavaScript from it, you should consider using the Django app. See the information on Caching below for more details on the PHP version's performance.
 
+**NOTE: The depender/php directory MUST be writable by your web app**
+
 The Django app does not have an html builder like the PHP version, but it's caching system is far more robust as it stores all scripts in memory. It is also easy to deploy assuming your server has Python running. Simply extract the files from this application onto your server and run "python manage.py runserver".
 
 Configuration
 ---------------
 Included in this distribution is a file named "config_example.json" which, if copied to "config.json" will put this app into its default mode. The values in the config.json are as follows:
 
-* compression - The default compression to use. Values can be "yui", "jsmin", or "none" - defaults to "yui"; see compression section below for more details on compression.
+* compression - The default compression to use. Values can be "yui", "jsmin", or "none" - defaults to "none"; see compression section below for more details on compression.
 * available_compressions - Supported compression types - defaults to both "yui", and "jsmin"; not all systems are set up to allow java executables at the command line (as on certain low-end hosting providers) so you may wish to disable yui. The Django app only supports yui (and none); it ignores any other listed types - so it will ignore jsmin for example.
 * libs - an object pointing to each library that the builder should support. Each entry has a setting for "scripts" which points to the directory that contains *scripts.json*. From the example file:
 
@@ -40,7 +42,7 @@ Included in this distribution is a file named "config_example.json" which, if co
 			}
 		}
 
-* cache scripts.json - When *true* the app will cash the values in the scripts.json files in your libraries and improve performance. The down side is that if you change the scripts.json, you must refresh the cache by hitting */depender/build.php?reset=true*. Note that this value only applies to the php version of this application, not the django version.
+* php: cache scripts.json - When *true* the app will cash the values in the scripts.json files in your libraries and improve performance. The down side is that if you change the scripts.json, you must refresh the cache by hitting */depender/build.php?reset=true*. Note that **this value only applies to the php version** of this application, not the django version.
 
 ### Notes
 
