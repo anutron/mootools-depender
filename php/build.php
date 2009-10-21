@@ -9,4 +9,3 @@ if ($depender->getVar('require') || $depender->getVar('requireLibs') || $depende
 	$depender->deleteCache('flat');
 }
 
-?>

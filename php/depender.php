@@ -337,4 +337,3 @@ Class Depender {
 }
 date_default_timezone_set('UTC');
 
-?>
