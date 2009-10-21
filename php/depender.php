@@ -1,7 +1,8 @@
 <?php
 
 Class Depender {
-	const ConfigFilename  = '../config.json';
+	const ConfigFilename  = 'config';
+	const ConfigPath  = '../config/';
 	const FileRoot        = '../';
 	const ScriptsFilename = 'scripts.json';
 
@@ -16,11 +17,10 @@ Class Depender {
 	
 	public function getConfig($reset=false) {
 		if (isset(self::$config) && !$reset) return self::$config;
-		$file = self::ConfigFilename;
+		$file = $this->getVar('project') ? $this->getVar('project') : self::ConfigFilename;
+		$file = self::ConfigPath . $file . '.json';
 		$this->checkFile($file);
 		self::$config = json_decode( file_get_contents( $file ), True );
-		self::$config['libs']['depender-client'] = Array();
-		self::$config['libs']['depender-client']['scripts'] = 'client/Source';
 		return self::$config;
 	}
 	
