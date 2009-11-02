@@ -11,7 +11,6 @@ $depender = New Depender;
 		<link rel="stylesheet" href="../styles/depender.css" type="text/css" media="screen" title="no title" charset="utf-8">
 		<script src="build.php?requireLibs=mootools-core&require=Fx.Reveal,URI,Element.Position,String.QueryString"></script>
 		<script src="interface.js" type="text/javascript" charset="utf-8"></script>
-		<script src="zeroclipboard/ZeroClipboard.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 	<body>
 <h1>MooTools Library Builder
@@ -124,6 +123,14 @@ $depender = New Depender;
 <div id="warn_url">
 	You must select at least one dependency.
 </div>
+<div id="copier">
+	<h2>Copy
+		<a id="close_copier" class="button">close</a>
+		</h2>
+	<p>Copy the selected text:</p>
+	<p><input type="text"/></p>
+</div>
+
 <script>
 Interface.start();
 $('help').position();

@@ -217,7 +217,7 @@ label {
 	cursor: pointer;
 }
 /* help */
-#help {
+#help, #copier {
 	display: none;
 	width: 500px;
 	background: #d9d9d9;
@@ -227,7 +227,7 @@ label {
 	-moz-box-shadow: 0 6px 10px #555;
 	-webkit-box-shadow: 0 2px 4px #555;
 }
-#help h2 {
+#help h2, #copier h2 {
 	padding: 10px;
 	background: #666;
 	color: #fff;
@@ -265,4 +265,21 @@ label {
 	-webkit-border-radius: 3px;
 	-moz-box-shadow: 0 6px 10px #555;
 	-webkit-box-shadow: 0 2px 4px #555;	
+}
+
+#copier h2 .button {
+	float: right;
+}
+#copier input {
+	margin: 0px auto;
+	width: 100%;
+}
+#copier p {
+	margin: 0px auto;
+	width: 90%;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+#copier {
+	padding-bottom: 10px;
 }
