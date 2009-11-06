@@ -27,9 +27,7 @@ var Interface = {
 		});
 	},
 	showHelp: function(){
-		console.log('show help');
 		if ($('help').getStyle('display') != "none") return;
-		console.log('show help!');
 		$('help').position({
 			offset: {
 				y: 50
@@ -40,7 +38,6 @@ var Interface = {
 			opacity: 0,
 			display: 'block'
 		}).fade('in');
-		console.log('help shown: ', $('help'));
 	},
 	setupActions: function(){
 		$('reset').addEvent('click', this.reset.bind(this));
@@ -105,20 +102,20 @@ var Interface = {
 	setupChex: function() {
 		this.scripts = $$('li.script');
 		this.scripts.each(function(script){
-			script.addEvent('click', this.select.bind(this));
 			var input = script.getElement('input');
 			script.store('input', input);
 			input.store('li', script);
 		}, this);
+		$(document.body).addEvent('click:relay(li.script)', this.select.bind(this));
 
 		this.excludes = $$('li.exclude');
 		this.excludes.each(function(ex, i) {
-			ex.addEvent('click', this.toggleExclude.bind(this));
 			var input = ex.getElement('input');
 			ex.store('input', input);
 			ex.store('script', this.scripts[i]);
 			input.store('li', ex);
 		}, this);
+		$(document.body).addEvent('click:relay(li.exclude)', this.toggleExclude.bind(this));
 		
 		var sections = $$('dd.sourceContents');
 		$$('dt.sourceHeader').each(function(header, i){
@@ -167,13 +164,13 @@ var Interface = {
 		});
 	},
 	
-	excludeLibrary: function(e){
-		$(e.target).retrieve('section').dissolve().get('reveal').chain(this.compute.bind(this));
-		$(e.target).getElement('input').set('checked', true);
+	excludeLibrary: function(e, target){
+		$(target).retrieve('section').dissolve().get('reveal').chain(this.compute.bind(this));
+		$(target).getElement('input').set('checked', true);
 	},
 	
-	select: function(e) {
-		var input = $(e.target).retrieve('input');
+	select: function(e, target) {
+		var input = $(target).retrieve('input');
 		if (input.get('checked')) this.uncheck(input);
 		else this.check(input);
 	},
@@ -214,8 +211,8 @@ var Interface = {
 			else script.removeClass('required');
 		});
 	},
-	toggleExclude: function(e){
-		var input = $(e.target).retrieve('input');
+	toggleExclude: function(e, target){
+		var input = $(target).retrieve('input');
 		if (input.get('checked')) this.unexclude(input);
 		else this.exclude(input);
 	},
@@ -232,7 +229,6 @@ var Interface = {
 };
 window.addEvent('domready', function(){
 	document.addEvent('click', function(e) {
-		console.log(e.target);
 		var copier = $('copier');
 		if (e.target != copier && !copier.hasChild(e.target) && e.target != $('copy') && e.target != $('copy_scripts')) copier.setStyle('display', 'none');
 	});
