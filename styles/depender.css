@@ -58,7 +58,7 @@ div.includes {
 	clear: both;
 }
 .sourceHeader .select .button {
-	background: #EEEEEE url(check.png) no-repeat 9px -84px;
+	background: #EEEEEE url(check.png) no-repeat 9px -284px;
 	padding-left: 28px;
 }
 .sourceHeader .select .selected {
@@ -113,7 +113,7 @@ h1 .button {
 	padding: 2px 12px;
 	margin: 3px 8px;
 	border: 1px solid #888;
-	background: #DDD url(check.png) no-repeat 7px -274px;
+	background: #DDD url(check.png) no-repeat 7px -278px;
 	padding-left: 28px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
@@ -159,12 +159,12 @@ li.checked a, li.checked a:hover {
 }
 .required {
 	border: 1px solid #5e9c5e;
-	background: #C0D9C0 url(check.png) no-repeat 7px -130px;
+	background: #C0D9C0 url(check.png) no-repeat 7px -134px;
 }
 .checked, span.sourceAll.selected {
 	cursor: pointer;
 	border: 1px solid #333;
-	background: #477747 url(check.png) no-repeat 7px 15px;
+	background: #477747 url(check.png) no-repeat 7px 10px;
 	color: #fff;
 	-moz-box-shadow: 0 1px 3px #ddd;
 	-webkit-box-shadow: 0 1px 3px #ddd;
