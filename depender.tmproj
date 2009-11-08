@@ -3,50 +3,112 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>depender.php</string>
+	<string>styles/depender.css</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
-			<string>depender.php</string>
-			<key>lastUsed</key>
-			<date>2009-07-30T22:06:13Z</date>
-			<key>selected</key>
-			<true/>
+			<string>todo.txt</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>client</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>client</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>compressors</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>compressors</string>
 		</dict>
 		<dict>
 			<key>filename</key>
-			<string>libs.json</string>
-			<key>lastUsed</key>
-			<date>2009-07-27T06:27:44Z</date>
+			<string>config_example.json</string>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>config.json</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>django</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>django</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>libs</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>libs</string>
+		</dict>
+		<dict>
+			<key>expanded</key>
+			<true/>
+			<key>name</key>
+			<string>php</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>php</string>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>README.html</string>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>README.md</string>
+		</dict>
+		<dict>
+			<key>filename</key>
+			<string>showdown.js</string>
+		</dict>
+		<dict>
+			<key>expanded</key>
+			<true/>
+			<key>name</key>
+			<string>styles</string>
+			<key>regexFolderFilter</key>
+			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
+			<key>sourceDirectory</key>
+			<string>styles</string>
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
 	<integer>203</integer>
 	<key>metaData</key>
 	<dict>
-		<key>depender.php</key>
+		<key>php/builder.form.php</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>28</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>61</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>21</integer>
+			<integer>0</integer>
 		</dict>
-		<key>libs.json</key>
+		<key>styles/depender.css</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>41</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>8</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -56,15 +118,30 @@
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>depender.php</string>
-		<string>libs.json</string>
+		<string>styles/depender.css</string>
+		<string>php/builder.form.php</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<false/>
 	<key>showFileHierarchyPanel</key>
 	<true/>
 	<key>treeState</key>
-	<dict/>
+	<dict>
+		<key>php</key>
+		<dict>
+			<key>isExpanded</key>
+			<true/>
+			<key>subItems</key>
+			<dict/>
+		</dict>
+		<key>styles</key>
+		<dict>
+			<key>isExpanded</key>
+			<true/>
+			<key>subItems</key>
+			<dict/>
+		</dict>
+	</dict>
 	<key>windowFrame</key>
 	<string>{{1920, 173}, {1440, 809}}</string>
 </dict>

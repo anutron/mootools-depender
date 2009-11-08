@@ -1,11 +1,29 @@
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+ 
+.clearfix {
+	display: inline-block;
+}
+ 
+html[xmlns] .clearfix {
+	display: block;
+}
+ 
+* html .clearfix {
+	height: 1%;
+}
+
 html, body {
 	font-family: "Lucida Grande", "Lucida Sans Unicode", "Trebuchet MS", Helvetica, Arial, sans-serif;
 	margin: 0px;
 	font-size: 12px;
 	background: #ccc;
-}
-body {
-	padding-bottom: 500px;
 }
 body * {
 	position: relative;
@@ -27,8 +45,8 @@ h1 {
 	border-bottom: 1px solid #222;
 }
 form {
-	width: 600px;
-	margin: 30px auto;
+	width: 900px;
+	margin: 30px auto 100px;
 }
 div.includes {
 	padding: 10px;
@@ -38,6 +56,14 @@ div.includes {
 	border-bottom: 1px solid #888;
 	padding: 15px 4px 4px;
 	clear: both;
+}
+.sourceHeader .select .button {
+	background: #EEEEEE url(check.png) no-repeat 9px -284px;
+	padding-left: 28px;
+}
+.sourceHeader .select .selected {
+	background: #E4C0C0 url(check.png) no-repeat 9px 4px;
+	padding-left: 28px;
 }
 div.select {
 	font-size: 10px;
@@ -85,9 +111,10 @@ h1 .button {
 .script {
 	cursor: pointer;
 	padding: 2px 12px;
-	margin: 2px 8px;
+	margin: 3px 8px;
 	border: 1px solid #888;
-	background-color: #ddd;
+	background: #DDD url(check.png) no-repeat 7px -278px;
+	padding-left: 28px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	-moz-box-shadow: 0 1px 3px #999;
@@ -102,7 +129,7 @@ h1 .button {
 }
 .scripts li.exclude {
 	padding: 2px 0px;
-	margin: 2px;
+	margin: 3px 2px;
 	width: 65px;
 	float: left;
 	text-align: center;
@@ -114,23 +141,30 @@ h1 .button {
 	color: #777;
 	cursor: pointer;
 }
+
+li.script a {
+	color: #0f3faa;
+}
+li.checked a, li.checked a:hover {
+	color: #c2dbfb;
+}
 .scripts li.exclude:hover {
 	border-color: #222;
 	color: #222;
 }
 .scripts li.script {
-	width: 463px;
+	width: 744px;
 	float: left;
 	clear: both;
 }
 .required {
 	border: 1px solid #5e9c5e;
-	background: #c0d9c0;
+	background: #C0D9C0 url(check.png) no-repeat 7px -134px;
 }
 .checked, span.sourceAll.selected {
 	cursor: pointer;
 	border: 1px solid #333;
-	background: #333;
+	background: #477747 url(check.png) no-repeat 7px 10px;
 	color: #fff;
 	-moz-box-shadow: 0 1px 3px #ddd;
 	-webkit-box-shadow: 0 1px 3px #ddd;
@@ -151,7 +185,9 @@ h1 .button {
 	background-color: #e4c0c0;
 	color: #a84747;
 }
-
+.description {
+	font-size: 10px;
+}
 /* controls */
 #controls {
 	width: 100%;
@@ -198,6 +234,9 @@ h1 .button {
 	overflow: hidden;
 	height: 16px;
 }
+#controls #action_list a:hover {
+	text-decoration: none;
+}
 #controls #action_list li {
 	float: right;
 }
@@ -217,7 +256,7 @@ label {
 	cursor: pointer;
 }
 /* help */
-#help {
+#help, #copier {
 	display: none;
 	width: 500px;
 	background: #d9d9d9;
@@ -227,7 +266,7 @@ label {
 	-moz-box-shadow: 0 6px 10px #555;
 	-webkit-box-shadow: 0 2px 4px #555;
 }
-#help h2 {
+#help h2, #copier h2 {
 	padding: 10px;
 	background: #666;
 	color: #fff;
@@ -265,4 +304,21 @@ label {
 	-webkit-border-radius: 3px;
 	-moz-box-shadow: 0 6px 10px #555;
 	-webkit-box-shadow: 0 2px 4px #555;	
+}
+
+#copier h2 .button {
+	float: right;
+}
+#copier input {
+	margin: 0px auto;
+	width: 100%;
+}
+#copier p {
+	margin: 0px auto;
+	width: 90%;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+#copier {
+	padding-bottom: 10px;
 }

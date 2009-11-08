@@ -23,7 +23,7 @@ var Interface = {
 	hideHelp: function(){
 		if ($('help').getStyle('display') == "none") return;
 		$('help').fade('out').get('tween').chain(function(){
-			$('help').hide();
+			$('help').setStyle('display', 'none');
 		});
 	},
 	showHelp: function(){
@@ -34,7 +34,10 @@ var Interface = {
 			},
 			position: "topcenter",
 			edge: "topcenter"
-		}).setStyle('opacity', 0).show().fade('in');
+		}).setStyles({
+			opacity: 0,
+			display: 'block'
+		}).fade('in');
 	},
 	setupActions: function(){
 		$('reset').addEvent('click', this.reset.bind(this));
@@ -43,17 +46,29 @@ var Interface = {
 		}.bind(this));
 	},
 	clippers: function(){
-		var copy = new ZeroClipboard.Client();
-		copy.glue('copy');
-		copy.div.inject($('copy'), 'after').setPosition({relativeTo: $('copy')});
-		copy.addEventListener('mouseDown', function(){
-			if (this.checkUrl()) copy.setText(this.getUrl());
+		//TODO
+		var copier = $('copier');
+		var input = copier.getElement('input');
+		var button = $('close_copier');
+		button.addEvent('click', function(){
+			copier.setStyle('display', 'none');
+		});
+		input.addEvent('focus', function(){
+			input.select();
+		});
+		$('copy').addEvent('click', function(){
+			if (this.checkUrl()) {
+				input.set('value', this.getUrl());
+				copier.setStyle('display', 'block').position();
+				input.select();
+			}
 		}.bind(this));
-		var scripts = new ZeroClipboard.Client();
-		scripts.glue('copy_scripts');
-		scripts.div.inject($('copy_scripts'), 'after').setPosition({relativeTo: $('copy_scripts')});
-		scripts.addEventListener('mouseDown', function(){
-			if (this.checkUrl()) scripts.setText("<scr"+"ipt src=\""+this.getUrl()+"\"></scr"+"ipt>");
+		$('copy_scripts').addEvent('click', function(){
+			if (this.checkUrl()) {
+				input.set('value', '<scr'+'ipt src=\''+this.getUrl()+'\'></scr'+'ipt>');
+				copier.setStyle('display', 'block').position();
+				input.select();
+			}
 		}.bind(this));
 	},
 	getUrl: function(){
@@ -81,26 +96,26 @@ var Interface = {
 		$$('li').each(function(li){
 			li.removeClass('required').removeClass('checked').removeClass('excluded');
 		});
-		$$('dd.sourceContents').show();
+		$$('dd.sourceContents').setStyle('display', 'block');
 		$$('dt.sourceHeader span').removeClass('selected');
 	},
 	setupChex: function() {
 		this.scripts = $$('li.script');
 		this.scripts.each(function(script){
-			script.addEvent('click', this.select.bind(this));
 			var input = script.getElement('input');
 			script.store('input', input);
 			input.store('li', script);
 		}, this);
+		$(document.body).addEvent('click:relay(li.script)', this.select.bind(this));
 
 		this.excludes = $$('li.exclude');
 		this.excludes.each(function(ex, i) {
-			ex.addEvent('click', this.toggleExclude.bind(this));
 			var input = ex.getElement('input');
 			ex.store('input', input);
 			ex.store('script', this.scripts[i]);
 			input.store('li', ex);
 		}, this);
+		$(document.body).addEvent('click:relay(li.exclude)', this.toggleExclude.bind(this));
 		
 		var sections = $$('dd.sourceContents');
 		$$('dt.sourceHeader').each(function(header, i){
@@ -149,13 +164,13 @@ var Interface = {
 		});
 	},
 	
-	excludeLibrary: function(e){
-		$(e.target).retrieve('section').dissolve().get('reveal').chain(this.compute.bind(this));
-		$(e.target).getElement('input').set('checked', true);
+	excludeLibrary: function(e, target){
+		$(target).retrieve('section').dissolve().get('reveal').chain(this.compute.bind(this));
+		$(target).getElement('input').set('checked', true);
 	},
 	
-	select: function(e) {
-		var input = $(e.target).retrieve('input');
+	select: function(e, target) {
+		var input = $(target).retrieve('input');
 		if (input.get('checked')) this.uncheck(input);
 		else this.check(input);
 	},
@@ -196,8 +211,8 @@ var Interface = {
 			else script.removeClass('required');
 		});
 	},
-	toggleExclude: function(e){
-		var input = $(e.target).retrieve('input');
+	toggleExclude: function(e, target){
+		var input = $(target).retrieve('input');
 		if (input.get('checked')) this.unexclude(input);
 		else this.exclude(input);
 	},
@@ -212,3 +227,12 @@ var Interface = {
 		ex.retrieve('script').removeClass('excluded');
 	}
 };
+window.addEvent('domready', function(){
+	document.addEvent('click', function(e) {
+		var copier = $('copier');
+		if (e.target != copier && !copier.hasChild(e.target) && e.target != $('copy') && e.target != $('copy_scripts')) copier.setStyle('display', 'none');
+	});
+	document.addEvent('keyup', function(e) {
+		if (e.key == "esc") $('copier').setStyle('display', 'none');
+	});
+});
