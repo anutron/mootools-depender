@@ -11,6 +11,7 @@
 	},
 	"compression": "none",
 	"available_compressions": ["yui", "jsmin"],
+	"output filename": "built.js",
 
 	"php: cache scripts.json": false
 }

@@ -171,8 +171,11 @@ Class Depender {
 
 	public function header() {
 		header('Cache-Control: must-revalidate');
+		$filename = "built.js";
+		$conf = $this->getConfig();
+		if (isset($conf['php: output filename'])) $filename = $conf['php: output filename'];
 		if ($this->getVar('download')) {
-			header('Content-Disposition: attachment; filename="built.js"');
+			header('Content-Disposition: attachment; filename="'.$filename.'"');
 		} else {
 			header("Content-Type: application/x-javascript");
 		}

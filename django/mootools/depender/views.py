@@ -107,7 +107,7 @@ def build(request):
   response = HttpResponse(output, content_type="application/x-javascript")
   
   if (download == "true"):
-    response['Content-Disposition'] = 'attachment; filename=built.js'
+    response['Content-Disposition'] = 'attachment; filename=' + dpdr.get_output_filename()
   return response
 
 build.login_notrequired = True

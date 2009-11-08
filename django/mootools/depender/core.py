@@ -144,6 +144,12 @@ class Depender(object):
     out += "	builder: '" + url + "'\n"
     out += "});"
     return out;
+  
+  def get_output_filename(self):
+    """
+    returns the filename for the header if download=true
+    """
+    return self.conf.get('output filename', 'built.js')
 
 class Script(object):
   def __init__(self, library, category, name, path, data, compressors, copyright, debug=False):
