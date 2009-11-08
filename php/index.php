@@ -1,5 +1,5 @@
 <?php
-include_once "build.php";
+include_once "depender.php";
 $depender = New Depender;
 ?>
 
