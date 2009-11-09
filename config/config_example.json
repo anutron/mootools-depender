@@ -11,7 +11,7 @@
 	},
 	"compression": "none",
 	"available_compressions": ["yui", "jsmin"],
-	"output filename": "built.js",
+	"output filename": "mootools",
 
 	"php: cache scripts.json": false
 }

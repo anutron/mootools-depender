@@ -169,13 +169,15 @@ Class Depender {
 		return $compressed;
 	}
 
-	public function header() {
+	public function header($compressed) {
 		header('Cache-Control: must-revalidate');
-		$filename = "built.js";
+		$filename = "built";
 		$conf = $this->getConfig();
-		if (isset($conf['php: output filename'])) $filename = $conf['php: output filename'];
+		if (isset($conf['output filename'])) $filename = $conf['output filename'];
+		if ($compressed) $filename = $filename.'.compressed';
 		if ($this->getVar('download')) {
-			header('Content-Disposition: attachment; filename="'.$filename.'"');
+			header("Content-Type: text/plain");
+			header('Content-Disposition: attachment; filename="'.$filename.'.js";');
 		} else {
 			header("Content-Type: application/x-javascript");
 		}
@@ -272,8 +274,8 @@ Class Depender {
 
 		$includeLibs = $this->getVar('requireLibs') ? $this->parseArray($this->getVar('requireLibs')) : Array();
 		$excludeLibs = $this->getVar('excludeLibs') ? $this->parseArray($this->getVar('excludeLibs')) : Array();
-
-		$this->header();
+		$compressed = $this->getVar('compression', $config['compression']) != "none";
+		$this->header($compressed);
 
 		$libs        = $this->getLibraries();
 		$includes    = Array();
