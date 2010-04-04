@@ -19,7 +19,7 @@ This application comes in two forms: a PHP version and a Django/Python version. 
 
 The PHP version of the application is very easy to deploy (just drop it into a directory in your webserver's htdocs and hit it with your browser). It also ships with a download builder interface that allows you to view the files available, click the dependencies you require and download the library. However, the PHP version is less performant than the Django version, and if you plan on deploying this server for applications to pull JavaScript from it, you should consider using the Django app. See the information on Caching below for more details on the PHP version's performance.
 
-**NOTE: The depender/php directory MUST be writable by your web app**
+**NOTE: The depender/php/cache directory MUST be writable by your web app**
 
 The Django app does not have an html builder like the PHP version, but it's caching system is far more robust as it stores all scripts in memory. It is also easy to deploy assuming your server has Python running. Simply extract the files from this application onto your server and run "python manage.py runserver".
 
@@ -57,7 +57,7 @@ The application ships with two git submodule settings - one for the most recent,
 
 This will download the libraries. Copy *config_example.json* over to *config.json* and the application is ready to run. If you do not have git installed on your computer, you can simply download the MooTools Core and MooTools More libraries and unzip them into *libs/core* and *libs/more*.
 
-Note that the *php* directory must be writable by your web server if you are using the PHP version of the library.
+Note that the *php/cache* directory must be writable by your web server if you are using the PHP version of the library.
 
 ### Django Settings
 The Django application includes a *settings.py* file that has additional settings:
