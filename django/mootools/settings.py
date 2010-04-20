@@ -15,18 +15,17 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'mootools.urls'
 
 INSTALLED_APPS = (
-    'mootools.depender'
+    'depender'
 )
 
 # Depender configuration
-import os
-import logging
-
-logging.basicConfig(level=logging.INFO)
 
 
 # Configuration of MooTools Depender for Django
 # =============================================
+import os
+import logging
+logging.basicConfig(level=logging.INFO)
 
 DEPENDER_PACKAGE_YMLS = (
   os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "core", "package.yml")),

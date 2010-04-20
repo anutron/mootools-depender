@@ -1,0 +1,14 @@
+django/src/depender/__init__.py
+django/src/depender/core.py
+django/src/depender/models.py
+django/src/depender/urls.py
+django/src/depender/views.py
+django/src/depender.egg-info/PKG-INFO
+django/src/depender.egg-info/SOURCES.txt
+django/src/depender.egg-info/dependency_links.txt
+django/src/depender.egg-info/requires.txt
+django/src/depender.egg-info/top_level.txt
+django/src/depender/management/__init__.py
+django/src/depender/management/commands/__init__.py
+django/src/depender/management/commands/depender_check.py
+django/src/depender/management/commands/depender_rewrite.py
