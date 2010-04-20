@@ -282,7 +282,6 @@ class YamlFileData(object):
     else:
       package, component = package_component
       if package is "":
-        LOG.warning("Empty package name in component '%s'; assuming '%s'" % (component, self.package.key))
         package_key = self.package.key
       else:
         package_key = package.split(":")[0]
