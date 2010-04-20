@@ -3,6 +3,17 @@ Depender: A MooTools Dependency Loader
 
 This application generates concatenated libraries from multiple JavaScript files based on their dependencies and the files you require. It assumes that you have formatted your libraries in the way that MooTools is organized, though it does not require MooTools itself to operate.
 
+Quick Start (Django version)
+-----------
+
+  $ git clone http://github.com/anutron/mootools-depender.git
+  $ git submodule update --init
+  $ virtualenv env
+  $ env/bin/python django/depender/setup.py develop
+  $ env/bin/python django/mootools/manage.py runserver
+  
+  Then open [http://localhost:8000/depender/build?requireLibs=Core] to get MooTools Core.
+
 Overview
 -------
 
@@ -17,13 +28,13 @@ Installation
 
 This application comes in two forms: a PHP version and a Django/Python version. Each has advantages and disadvantages.
 
-The PHP version of the application is very easy to deploy (just drop it into a directory in your webserver's htdocs and hit it with your browser). It also ships with a download builder interface that allows you to view the files available, click the dependencies you require and download the library. However, the PHP version is less performant than the Django version, and if you plan on deploying this server for applications to pull JavaScript from it, you should consider using the Django app. See the information on Caching below for more details on the PHP version's performance.
+The PHP version of the application is very easy to deploy (just drop it into a directory in your webserver's htdocs and hit it with your browser). It also ships with a download builder interface that allows you to view the files available, click the dependencies you require and download the library. However, the PHP version is less performant than the Django version, and if you plan on deploying this server for applications to pull JavaScript from it, you should consider using the Django app. See the information on Caching below for more details on the PHP version's performance. Note that the PHP version now has support for memcache, which greatly improves its performance when enabled.
 
 **NOTE: The depender/php/cache directory MUST be writable by your web app**
 
 The Django app does not have an html builder like the PHP version, but it's caching system is far more robust as it stores all scripts in memory. It is also easy to deploy assuming your server has Python running. Simply extract the files from this application onto your server and run "python manage.py runserver".
 
-Configuration
+PHP Configuration
 ---------------
 Included in this distribution is a file named "config_example.json" which, if copied to "config.json" will put this app into its default mode. The values in the config.json are as follows:
 
@@ -42,34 +53,92 @@ Included in this distribution is a file named "config_example.json" which, if co
 			}
 		}
 
-* php: cache scripts.json - When *true* the app will cash the values in the scripts.json files in your libraries and improve performance. The down side is that if you change the scripts.json, you must refresh the cache by hitting */depender/build.php?reset=true*. Note that **this value only applies to the php version** of this application, not the django version.
+* cache scripts.json - When *true* the app will cash the values in the scripts.json files in your libraries and improve performance. The down side is that if you change the scripts.json, you must refresh the cache by hitting */depender/build.php?reset=true*. Note that **this value only applies to the php version** of this application, not the django version.
+* output filename - the default value in the "save as" dialog without the .js suffix. Defaults to "mootools".
 
 ### Notes
 
 * No two scripts in any of the libs should have the same name. So if one library has *Foo.js*, no other library should have a script with the same name. This is a remnant of the MooTools scripts.json, which wasn't designed originally to work with other scripts.json files. This naming requirement will be removed with MooTools 2.0.
 * The copyrights will be included in the header of each library.
+* **Important:** To use PHP to build MooTools with the new YAML headers, use Packager ([http://github.com/kamicane/packager](http://github.com/kamicane/packager)). Future versions of Depender's PHP app will support these headers. For now, either use the Django app (see below) or Packager.
+
+Django Configuration
+-------------------
+
+The Django implementation of Depender supports both the "old" scripts.json method for naming package contents and dependencies (which suffers from a requirement that ALL scripts be named uniquely) but also the newer method that MooTools supports using YAML based manifests and headers. The package.yml and YAML fragments define package names and component names and [can be found described on the MooTools Forge in detail](http://mootools.net/forge/how-to-add). Note that the tag is not used in dependency requirements and the asterisk value is not supported. You cannot do this:
+
+  requires: [Core/1.2.4:'*']
+
+If you specify a tag it will be ignored. Here is a valid YAML header sample:
+
+  /*
+  ---
+
+  script: Fx.Accordion.js
+
+  description: An Fx.Elements extension which allows you to easily create accordion type controls.
+
+  license: MIT-style license
+
+  authors:
+  - Valerio Proietti
+
+  requires:
+  - Core:1.2.4/Element.Event
+  - Fx.Elements
+  
+  ## requires: [Core/Element.Event, Fx.Elements] << also valid
+
+  provides: Fx.Accordion
+
+  ## provides: [Fx.Accordion] << also valid
+  ...
+  */
+
+Depender is a standard Django application that can be included in any project (see the Django docs to learn [the differences between applications and projects](http://docs.djangoproject.com/en/dev/intro/tutorial01/#creating-a-project)). It ships with a simple project called "mootools" that includes the Depender application and is configured to build MooTools Core and MooTools More.
+
+Configuring the MooTools Depender Project
+========================================
+
+Inside of `django/mootools` you'll find `settings.py`. This file contains all the configuration options for the simple "mootools" project which includes the Depender app. You'll find the following options that you may set:
+
+ - DEPENDER_DEBUG - set to `True` (the default) if you want Depender to always load scripts from the disk (i.e. disable memory caching). This also disabled compression. Note that this is somewhat slow-ish, as every request requires the app to load ALL the JS into memory.
+ - DEPENDER_PACKAGE_YMLS - a list of package.yml files to include; defaults to the submodules included in this repository (MooTools Core and MooTools More) as well as the Depender Client.
+ - DEPENDER_SCRIPTS_JSON - a list of scripts.json manifest files (these are deprecated manifests from < Mootools 1.3 era).
+ - DEPENDER_YUI_PATH - the path to the YUI compressor jar.
 
 Initialization
 --------------
 The application ships with two git submodule settings - one for the most recent, stable release of MooTools Core and another for MooTools More. Though the application does not require these to function, most people will wish to include these. To initialize these libraries you must execute at the command line:
 
-	git submodule update --init
+  git submodule update --init
 
-This will download the libraries. Copy *config_example.json* over to *config.json* and the application is ready to run. If you do not have git installed on your computer, you can simply download the MooTools Core and MooTools More libraries and unzip them into *libs/core* and *libs/more*.
+This will download the libraries. 
+
+Initializing the PHP instance
+=============================
+Copy *config_example.json* over to *config.json* and the application is ready to run. If you do not have git installed on your computer, you can simply download the MooTools Core and MooTools More libraries and unzip them into *libs/core* and *libs/more*.
 
 Note that the *php/cache* directory must be writable by your web server if you are using the PHP version of the library.
 
-### Django Settings
-The Django application includes a *settings.py* file that has additional settings:
+Initializing the Django instance
+================================
 
-DEPENDER_ROOT - the path to the root of the extracted files (where this README resides); you shouldn't need to alter this.
-DEPENDER_CONFIG_JSON - the path to *config.json*; if you copy *config_example.json* to *config.json* this shouldn't need altering.
-DEPENDER_YUI_PATH - the path to the YUI compressor; you shouldn't need to alter this.
-DEPENDER_DEBUG - if *True* depender does not catch or compress results, regardless of other configuration. This is useful for development.
+To run the Django depender server you should simply run this from the command line in the root of the repository:
+
+  $ virtualenv env 
+  $ env/bin/python django/depender/setup.py develop
+  $ env/bin/python django/mootools/manage.py runserver
+
+For more about virtualenv see [http://pypi.python.org/pypi/virtualenv](http://pypi.python.org/pypi/virtualenv). Once you've started the server you should be able to hit it with a request for some JS. Like this:
+
+  http://localhost:8000/depender/build?requireLibs=Core
 
 Adding Libraries
 ----------------
-Additional libraries can be easily added to the system by dropping their contents into the libs/ directory and editing the config file (they do not have to reside in the libs/ directory; so long as the config points to the appropriate location). You can use git submodules to track specific branches of external repositories or you can track a working branch using something like [crepo](http://github.com/cloudera/crepo/tree/master). Each library *must* have a *scripts.json* file that notes dependencies. I suggest the [Moo-ish Template](http://github.com/3n/mooish-template/tree/master) as a good place to start.
+Additional libraries can be easily added to the system by dropping their contents into the libs/ directory and editing the appropriate config file (they do not have to reside in the libs/ directory; so long as the config points to the appropriate location). You can use git submodules to track specific branches of external repositories or you can track a working branch using something like [crepo](http://github.com/cloudera/crepo/tree/master). 
+
+For the PHP version, each library *must* have a *scripts.json* file that notes dependencies. I suggest the [Moo-ish Template](http://github.com/3n/mooish-template/tree/master) as a good place to start. Otherwise use Packager for PHP ([http://github.com/kamicane/packager](http://github.com/kamicane/packager)).
 
 Compression
 -----------
@@ -88,7 +157,7 @@ Headers and Output
 -------
 Each file, whether compressed or not, is given a header that looks something like this:
 
-	//<copyright as defined in config.json>
+	//<copyright as defined in config.json> -- Note that the Django app doesn't have support for these yet
 
 	//Contents: Core, Hash, Number, Function, String, Array, etc.
 
@@ -117,7 +186,7 @@ The Depender app includes a client side component that integrates with this serv
 
 File System Caching vs Other Options
 ------------------------------------
-As noted above, the PHP version of this application caches files to disk. Reading these files from the disk is not the best way to cache them. Every request still has to compute which items you need and check the local disk to see if the file exists. If it does php reads that file and sends it to the browser. There are other caching systems that are far more performant (such as [memcached](http://www.danga.com/memcached/) for example) that you may wish to consider. Unless you are using the system to lazy load content, you might consider downloading the built file and linking to it directly (just as if you'd downloaded it from [mootools.net](http://mootools.net) for example). For sites that do not have to support excessively large volumes of traffic you'll probably be fine just including the scripts directly from the builder (i.e. a script tag that links to "/depender/build.php?requireLibs=mootools-core"). The Django version of the application caches to memory and is much faster and more suited for live deployment.
+As noted above, the PHP version of this application caches files to disk (update: but also now supports memchace). Reading these files from the disk is not the best way to cache them. Every request still has to compute which items you need and check the local disk to see if the file exists. If it does php reads that file and sends it to the browser. There are other caching systems that are far more performant (such as [memcached](http://www.danga.com/memcached/) for example) that you may wish to consider. Unless you are using the system to lazy load content, you might consider downloading the built file and linking to it directly (just as if you'd downloaded it from [mootools.net](http://mootools.net) for example). For sites that do not have to support excessively large volumes of traffic you'll probably be fine just including the scripts directly from the builder (i.e. a script tag that links to "/depender/build.php?requireLibs=mootools-core"). The Django version of the application caches to memory and is much faster and more suited for live deployment.
 
 The Builder Interface
 ---------------------
