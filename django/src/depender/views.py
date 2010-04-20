@@ -128,6 +128,6 @@ build.login_notrequired = True
 def test(request):
   #this seems silly
   import os
-  p = os.path.join(os.path.dirname(__file__), "..", "..", "static", "test.html")
+  p = os.path.join(os.path.dirname(__file__), "static", "test.html")
   f = file(p)
   return HttpResponse(f.read())
