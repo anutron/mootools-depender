@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# (c) Copyright 2010 Cloudera, Inc. All rights reserved.
 
 from django.core.management.base import NoArgsCommand
 from depender import views
