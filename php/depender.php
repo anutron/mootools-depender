@@ -6,6 +6,9 @@ Class Depender {
 	const FileRoot        = '../';
 	const ScriptsFilename = 'scripts.json';
 
+	const Disk            = 'disk';
+	const Memcache        = 'memcache';
+
 	const Post            = 'POST';
 	const Get             = 'GET';
 
@@ -22,6 +25,19 @@ Class Depender {
 		$this->checkFile($file);
 		self::$config = json_decode( file_get_contents( $file ), True );
 		return self::$config;
+
+	public function __construct() {
+		$config = $this->getConfig();
+		$this->cache = $config['cache'];
+
+		if ($this->cache == self::Memcache) {
+			$this->memcache = New Memcache;
+			$this->memcache->connect( 'localhost', 11211 );
+		}
+	}
+
+	public function getConfig() {
+		return json_decode( file_get_contents( self::ConfigFilename ), True );
 	}
 	
 	private function checkFile($file) {
@@ -196,25 +212,37 @@ Class Depender {
 	}
 
 	private function setCache($id, $value) {
-		$file = fopen('cache/'.$id, 'w+') or die("can't open file: cache/".$id);
-		$result = fwrite($file, serialize($value));
-		fclose($file);
-		return $result;
-	}
-
-	private function getCache($id) {
-		$file = 'cache/'.$id;
-		if (file_exists($file)) {
-			return unserialize(file_get_contents($file));
+		if ($this->cache == self::Disk) {
+			$file = fopen('cache/'.$id, 'w+') or die("can't open file: cache/".$id);
+			$result = fwrite($file, serialize($value));
+			fclose($file);
+			return $result;
 		} else {
-			return False;
+			return $this->memcache->set($id, $value);
 		}
 	}
 
-	public function deleteCache($id) {
-		$file = 'cache/'.$id;
-		if (file_exists($file)) {
-			return unlink($file);
+	private function getCache($id) {
+		if ($this->cache == Disk) {
+			$file = 'cache/'.$id;
+			if (file_exists($file)) {
+				return unserialize(file_get_contents($file));
+			} else {
+				return False;
+			}
+		} else {
+			return $this->memcache->get($id);
+		}
+	}
+
+	private function deleteCache($id) {
+		if ($this->cache == self::Disk) {
+			$file = 'cache/'.$id;
+			if (file_exists($file)) {
+				return unlink($file);
+			}
+		} else {
+			return $this->memcache->delete($id);
 		}
 	}
 

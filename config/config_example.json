@@ -9,6 +9,7 @@
 			"scripts": "libs/more/Source"
 		}
 	},
+	"cache" : "disk",
 	"compression": "none",
 	"available_compressions": ["yui", "jsmin"],
 	"output filename": "mootools",
