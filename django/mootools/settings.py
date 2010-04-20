@@ -30,6 +30,8 @@ logging.basicConfig(level=logging.INFO)
 DEPENDER_PACKAGE_YMLS = (
   os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "core", "package.yml")),
   os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "more", "package.yml")),
+  # Don't forget to add the depender client to your libraries!
+  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "client", "package.yml")),
 )
 DEPENDER_SCRIPTS_JSON = []
 

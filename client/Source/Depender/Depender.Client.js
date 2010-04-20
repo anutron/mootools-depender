@@ -5,7 +5,7 @@ description: A dependency loader for the MooTools library that integrates with <
   href="http://github.com/anutron/mootools-depender/tree/">the server side Depender
   library</a>.
 provides: [Depender.Client]
-requires: [core/Class.Extras, core/Element.Event]
+requires: [Core/Class.Extras, Core/Element.Event]
 script: Depender.Client.js
 authors: [Aaron Newton]
 
