@@ -6,13 +6,13 @@ This application generates concatenated libraries from multiple JavaScript files
 Quick Start (Django version)
 -----------
 
-	$ git clone http://github.com/anutron/mootools-depender.git
-	$ git submodule update --init
-	$ virtualenv env
-	$ env/bin/python django/depender/setup.py develop
-	$ env/bin/python django/mootools/manage.py runserver
-	
-	Then open [http://localhost:8000/depender/build?requireLibs=Core] to get MooTools Core.
+		$ git clone http://github.com/anutron/mootools-depender.git
+		$ git submodule update --init
+		$ virtualenv env
+		$ env/bin/python django/depender/setup.py develop
+		$ env/bin/python django/mootools/manage.py runserver
+		
+		Then open http://localhost:8000/depender/build?requireLibs=Core to get MooTools Core.
 
 Overview
 -------
@@ -102,7 +102,7 @@ Configuring the MooTools Depender Project
 
 Inside of `django/mootools` you'll find `settings.py`. This file contains all the configuration options for the simple "mootools" project which includes the Depender app. You'll find the following options that you may set:
 
- - DEPENDER_DEBUG - set to `True` (the default) if you want Depender to always load scripts from the disk (i.e. disable memory caching). This also disabled compression. Note that this is somewhat slow-ish, as every request requires the app to load ALL the JS into memory.
+ - DEPENDER_DEBUG - set to `True` (the default) if you want Depender to always load scripts from the disk (i.e. disable memory caching). This also disabled compression. Note that this is somewhat slow-ish, as every request requires the app to load ALL the JS into memory. **Note** you can set this as an environment variable if you prefer.
  - DEPENDER_PACKAGE_YMLS - a list of package.yml files to include; defaults to the submodules included in this repository (MooTools Core and MooTools More) as well as the Depender Client.
  - DEPENDER_SCRIPTS_JSON - a list of scripts.json manifest files (these are deprecated manifests from < Mootools 1.3 era).
  - DEPENDER_YUI_PATH - the path to the YUI compressor jar.
@@ -129,6 +129,10 @@ To run the Django depender server you should simply run this from the command li
 	$ virtualenv env 
 	$ env/bin/python django/depender/setup.py develop
 	$ env/bin/python django/mootools/manage.py runserver
+
+If you want you can force the server to run in debug mode like so:
+
+	$ DESKTOP_DEPENDER_DEBUG=1 env/bin/python django/mootools/manage.py runserver
 
 For more about virtualenv see [http://pypi.python.org/pypi/virtualenv](http://pypi.python.org/pypi/virtualenv). Once you've started the server you should be able to hit it with a request for some JS. Like this:
 
