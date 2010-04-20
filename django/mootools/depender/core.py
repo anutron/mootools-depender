@@ -250,6 +250,12 @@ class DependerData(object):
         files.append(f)
     return files
 
+def _coerce_string_to_list(potential_string):
+  if isinstance(potential_string, basestring):
+    return [ potential_string ]
+  else:
+    return potential_string
+
 class YamlFileData(object):
   """Source file pointed to by a package.yml."""
   def __init__(self, shortname, filename, package, metadata):
@@ -258,9 +264,9 @@ class YamlFileData(object):
     self.content = _force_unicode(file(filename).read())
     self.metadata = metadata
     self.package = package
-    self.provides = [(package.key, module) for module in metadata["provides"]]
+    self.provides = [(package.key, module) for module in _coerce_string_to_list(metadata["provides"])]
     self.requires = []
-    self.requires = [ self._parse_component_string(r) for r in metadata.get("requires", []) ]
+    self.requires = [ self._parse_component_string(r) for r in _coerce_string_to_list(metadata.get("requires", [])) ]
 
   def _parse_component_string(self, component):
     """
