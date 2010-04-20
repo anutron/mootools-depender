@@ -1,5 +1,8 @@
 {
 	"libs": {
+		"Depender.Client": {
+			"scripts": "client/Source"
+		},
 		"mootools-core": {
 			"copyright": "//MooTools, <http://mootools.net>, My Object Oriented (JavaScript) Tools. Copyright (c) 2006-2009 Valerio Proietti, <http://mad4milk.net>, MIT Style License.",
 			"scripts": "libs/core/Source"

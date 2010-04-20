@@ -51,6 +51,8 @@ var Depender = {
 		}.bind(this);
 
 		var src = [this.options.builder + '?client=true'];
+		
+		if (options.compression) src.push('compression=' + options.compression);
 
 		if (options.scripts) {
 			var scripts = $splat(options.scripts).filter(function(script) {

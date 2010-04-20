@@ -24,7 +24,6 @@
 		Depender.enableLog().require({
 			scripts: ['Element.Position', 'Fx.Tween'],
 			callback: function(){
-				console.log('loaded!');
 				$('success').position({
 					relative: document.body,
 					position: 'top',
@@ -34,6 +33,7 @@
 					opacity: 0,
 					visibility: 'visibile'
 				}).tween('opacity', 1);
+				console.log('loaded!');
 			}
 		});
 		</script>

@@ -63,6 +63,7 @@ Loads required scripts and executes a callback when they are ready. Note that th
 * scripts - (*mixed*) an *array* of script names (*strings*) to load. If you have only one script required, it can be a *string*.
 * sources - (*mixed*) an *array* of source names (*strings*) to load. If you have only one source required, it can be a *string*. The source name should map to the names defined in your configuration for the [Depender Server][]. So if your configuration names the MooTools Core "core" then you could list "core" in this option to load that entire library.
 * callback - (*function*) callback executed when the requirements are loaded.
+* compression - (*string*) to override the default configuration. i.e. "yui", "jsmin" or "none"
 
 ### Returns
 
