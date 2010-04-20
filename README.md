@@ -6,13 +6,13 @@ This application generates concatenated libraries from multiple JavaScript files
 Quick Start (Django version)
 -----------
 
-  $ git clone http://github.com/anutron/mootools-depender.git
-  $ git submodule update --init
-  $ virtualenv env
-  $ env/bin/python django/depender/setup.py develop
-  $ env/bin/python django/mootools/manage.py runserver
-  
-  Then open [http://localhost:8000/depender/build?requireLibs=Core] to get MooTools Core.
+	$ git clone http://github.com/anutron/mootools-depender.git
+	$ git submodule update --init
+	$ virtualenv env
+	$ env/bin/python django/depender/setup.py develop
+	$ env/bin/python django/mootools/manage.py runserver
+	
+	Then open [http://localhost:8000/depender/build?requireLibs=Core] to get MooTools Core.
 
 Overview
 -------
@@ -67,33 +67,33 @@ Django Configuration
 
 The Django implementation of Depender supports both the "old" scripts.json method for naming package contents and dependencies (which suffers from a requirement that ALL scripts be named uniquely) but also the newer method that MooTools supports using YAML based manifests and headers. The package.yml and YAML fragments define package names and component names and [can be found described on the MooTools Forge in detail](http://mootools.net/forge/how-to-add). Note that the tag is not used in dependency requirements and the asterisk value is not supported. You cannot do this:
 
-  requires: [Core/1.2.4:'*']
+	requires: [Core/1.2.4:'*']
 
 If you specify a tag it will be ignored. Here is a valid YAML header sample:
 
-  /*
-  ---
+	/*
+	---
 
-  script: Fx.Accordion.js
+	script: Fx.Accordion.js
 
-  description: An Fx.Elements extension which allows you to easily create accordion type controls.
+	description: An Fx.Elements extension which allows you to easily create accordion type controls.
 
-  license: MIT-style license
+	license: MIT-style license
 
-  authors:
-  - Valerio Proietti
+	authors:
+	- Valerio Proietti
 
-  requires:
-  - Core:1.2.4/Element.Event
-  - Fx.Elements
-  
-  ## requires: [Core/Element.Event, Fx.Elements] << also valid
+	requires:
+	- Core:1.2.4/Element.Event
+	- Fx.Elements
+	
+	## requires: [Core/Element.Event, Fx.Elements] << also valid
 
-  provides: Fx.Accordion
+	provides: Fx.Accordion
 
-  ## provides: [Fx.Accordion] << also valid
-  ...
-  */
+	## provides: [Fx.Accordion] << also valid
+	...
+	*/
 
 Depender is a standard Django application that can be included in any project (see the Django docs to learn [the differences between applications and projects](http://docs.djangoproject.com/en/dev/intro/tutorial01/#creating-a-project)). It ships with a simple project called "mootools" that includes the Depender application and is configured to build MooTools Core and MooTools More.
 
@@ -111,7 +111,7 @@ Initialization
 --------------
 The application ships with two git submodule settings - one for the most recent, stable release of MooTools Core and another for MooTools More. Though the application does not require these to function, most people will wish to include these. To initialize these libraries you must execute at the command line:
 
-  git submodule update --init
+	git submodule update --init
 
 This will download the libraries. 
 
@@ -126,13 +126,13 @@ Initializing the Django instance
 
 To run the Django depender server you should simply run this from the command line in the root of the repository:
 
-  $ virtualenv env 
-  $ env/bin/python django/depender/setup.py develop
-  $ env/bin/python django/mootools/manage.py runserver
+	$ virtualenv env 
+	$ env/bin/python django/depender/setup.py develop
+	$ env/bin/python django/mootools/manage.py runserver
 
 For more about virtualenv see [http://pypi.python.org/pypi/virtualenv](http://pypi.python.org/pypi/virtualenv). Once you've started the server you should be able to hit it with a request for some JS. Like this:
 
-  http://localhost:8000/depender/build?requireLibs=Core
+	http://localhost:8000/depender/build?requireLibs=Core
 
 Adding Libraries
 ----------------
