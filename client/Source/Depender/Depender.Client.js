@@ -1,13 +1,15 @@
+// Copyright (c) 2010, Cloudera, inc. All rights reserved.
 /*
-Script: Depender.Client.js
-	A dependency loader for the MooTools library that integrates with the server side Depender library.
-	see:  http://github.com/anutron/mootools-depender/tree/
+---
+description: A dependency loader for the MooTools library that integrates with <a
+  href="http://github.com/anutron/mootools-depender/tree/">the server side Depender
+  library</a>.
+provides: [Depender.Client]
+requires: [Core/Class.Extras, Core/Element.Event]
+script: Depender.Client.js
+authors: [Aaron Newton]
 
-	License:
-		MIT-style license.
-
-	Authors:
-		Aaron Newton
+...
 */
 
 var Depender = {
@@ -16,7 +18,6 @@ var Depender = {
 		/* 
 		onRequire: $empty(options),
 		onRequirementLoaded: $empty([scripts, options]),
-		onScriptLoaded: $empty(data)
 		target: null,
 		builder: '/depender/build.php'
 		*/
@@ -33,13 +34,15 @@ var Depender = {
 	lastLoaded: 0,
 
 	require: function(options){
-
 		if (!this.options.builder) return;
 		this.fireEvent('require', options);
 
 		var finish = function(script){
 			this.finished.push(script);
-			if (options.callback) options.callback(options);
+			if (options.callback) {
+				if (options.domready) window.addEvent('domready', options.callback.pass(options));
+				else options.callback(options);
+			}
 			this.fireEvent('scriptLoaded', {
 				script: this.loaded.join(', '),
 				totalLoaded: (this.finished.length / this.required.length * 100).round(),
@@ -76,12 +79,21 @@ var Depender = {
 		if (this.loaded.length) {
 			src.push('exclude=' + this.loaded.join(','));
 		}
-
+		var finished;
 		var script = new Element('script', {
 			src: src.join('&'),
 			events: {
+				readystatechange: function(){
+					if (['loaded', 'complete'].contains(this.readyState) && !finished) {
+						finished = true;
+						finish(script);
+					}
+				},
 				load: function(){
-					finish(script);
+					if (!finished) {
+						finished = true;
+						finish(script);
+					}
 				}
 			}
 		}).inject(this.options.target || document.head);

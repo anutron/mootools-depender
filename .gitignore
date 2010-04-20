@@ -1,3 +1,5 @@
 php/cache/*
 config/config.json
 *.pyc
+/depender.egg-info
+/env
