@@ -1,6 +1,6 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('',
   url(r'^build$', 'depender.views.build'),

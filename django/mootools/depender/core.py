@@ -1,217 +1,464 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
+"""
+Depender manages packages and components, which may
+have dependencies upon each other.
 
+There are historically two ways to specify a package:
+  - package.yml specifies a package name and files
+    it includes, and then the files have yaml headers
+    specifying what they require and provide
+  - scripts.json specifies a library (roughly equivalent
+    to a package) which has files; the components
+    are simply the filenames
+The newer package.yml form lets you have multiple components
+with the same name, if they're in different packages.
+
+Here is how the classes are structured:
+
+ DependerData:
+   Inputs: package.yml files, scripts.json files (legacy)
+     package -> PackageData
+       metadata
+       component -> FileData
+         file_name/content
+         provides: [(package, component)]
+         requires: [(package, component)]
+     legacy_component_name -> [packages]
+    
+ Components tend to be referred by (package, component) tuples.
+
+TODO: Use a ComponentId class instead of a tuple.
+"""
+
+import re
+import yaml
 import os
-
-from django.conf import settings
-from django.utils.datastructures import SortedDict
-
-import logging
-import subprocess
 import simplejson
+import logging
 
-LOG = logging.getLogger(__name__)
+# Matches the bit inbetween --- and ...
+YAML_SECTION = re.compile(".*^---$(.*)^\.\.\.$.*", re.MULTILINE | re.DOTALL)
 
-class Depender(object):
+LOGGER = logging.getLogger(__name__)
+
+class DependerData(object):
   """
-  The base class for this application; loads all the scripts, compresses them, 
-  and retains them in memory awaiting requests to concatenate scripts for repsonse.
+  Main class that holds all the data.
   """
-  def __init__(self, root, config_file, debug=False):
+  def __init__(self, package_ymls=None, script_jsons=None):
     """
-    @param root: Root directory relative to which to resolve scripts.json
-    references.
-    @param config_file: Configuration file for Depender, which
-    contains links to other config.json's.
+    package_ymls is list of filenames; script_jsons
+    is list of (library_name, filename) pairs.
     """
-    self.script_root = root
-    self.debug = debug
-    self.conf = self.parse_configuration(config_file)
-    self.default_compression = self.conf['compression']
-    self.initialize_compressors()
-    self.load_everything()
-    
-  def initialize_compressors(self):
-    """
-    creates instances of supported compressors (defaults only to YUI)
-    """
-    self.supported_compressors = {
-      "yui": YUI()
-    }
-    self.compressors = {}
-    for compression in self.conf['available_compressions']:
-      if (self.supported_compressors.get(compression)): self.compressors[compression] = self.supported_compressors[compression]
-    
-  def relative(self, path):
-    """
-    converts a path to the full path relative to the depender root
-    """
-    return os.path.join(self.script_root, path)
+    if package_ymls is None:
+      package_ymls = []
+    if script_jsons is None:
+      scripts_json = []
 
-  def parse_json_relative(self, path):
-    "Returns decoded representation of JSON file at path."
-    f = file(self.relative(path))
-    o = simplejson.load(f)
-    return o
+    self.packages = {}
+    self.unqualified_components = {}
 
-  def parse_configuration(self, config):
-    """
-    parses a configuration file (config.json) to be the configuration for the Depender instance"
-    """
-    conf = self.parse_json_relative(config)
-    return conf
+    self.script_json_packages = []
 
-  def get_scripts(self, library):
-    """
-    Gets all the scripts for a library and instantiates them as a Script, 
-    returning them in an array.
-    """
-    base = self.conf["libs"][library]["scripts"]
-    scripts = self.parse_json_relative(os.path.join(base, "scripts.json"))
-    ret = []
-    for cat, cat_data in scripts.iteritems():
-      for script, data in cat_data.iteritems():
-        path = self.relative(os.path.join(base, cat, script + ".js"))
-        s = Script(library=library, category=cat, name=script, 
-          path=path, data=data, compressors=self.compressors, debug=self.debug,
-          copyright=self.conf["libs"][library].get('copyright', ''))
-        ret.append(s)
-    return ret
+    package_ymls = package_ymls or []
+    self.yaml_packages = [ YamlPackageData(f) for f in package_ymls ]
+    self.script_json_packages = [ ScriptsJsonPackage(pkg_name, scripts_json_file) for 
+      pkg_name, scripts_json_file in script_jsons ]
 
-  def load_everything(self):
-    """
-    Loads all scripts defined in config.json's 'libs' section into memory
-    """
-    self.all_scripts = SortedDict()
-    self.conf["libs"]["depender-client"] = {
-      "scripts": self.script_root + "/../client/Source"
-    }
-    for library in self.conf["libs"]:
-      scripts = self.get_scripts(library)
-      for s in scripts:
-        if s.name in self.all_scripts:
-          raise Exception("%s defined in two libraries: %s and %s" % 
-            (s.name, self.all_scripts[s.name].library, s.library))
-        self.all_scripts[s.name] = s
-    # Map the raw_deps (which are strings) into the objects
-    for script in self.all_scripts.itervalues():
-      try:
-        script.deps = [ self.all_scripts[x] for x in script.raw_deps ]
-      except KeyError:
-        raise Exception("%s could not be found in any library" % x)
+    all_packages = self.yaml_packages + self.script_json_packages
 
-  def accumulate_dependencies(self, script, accumulated_list, accumulated_set):
-    """
-    determines the dependencies for a script
-    """
-    for dep in script.deps:
-      if dep is not script and dep not in accumulated_set:
-        self.accumulate_dependencies(dep, accumulated_list, accumulated_set)
-    if script not in accumulated_set:
-      accumulated_list.append(script)
-      accumulated_set.add(script)
-  
-  def get_dependencies(self, include_names, exclude_names, include_lib_names, exclude_lib_names):
-    """
-    Recursively gather all dependencies for script, ignoring
-    dependencies in exclude.
-    """
-    for lib in include_lib_names:
-      for script in self.get_scripts(lib):
-        include_names.append(script.name)
-    for lib in exclude_lib_names:
-      for script in self.get_scripts(lib):
-        exclude_names.append(script.name)
+    for p in all_packages:
+      if p.key in self.packages:
+        raise Exception("Duplicate package: " + p.key)
+      self.packages[p.key] = p
+      for component_name, file_data in p.components.iteritems():
+        self.unqualified_components.setdefault(component_name, []).append(file_data)
 
-    scripts = [ self.all_scripts[name] for name in include_names ]
-    excludes = [ self.all_scripts[name] for name in exclude_names ]
-    
-    acc_list = []
-    acc_set = set(excludes)
-    for s in scripts:
-      self.accumulate_dependencies(s, acc_list, acc_set)
-      
-    assert len(acc_list) == len(set(acc_list))
-    return acc_list
+    # Resolve script_json dependencies
+    for p in self.script_json_packages:
+      for fd in p.components.itervalues():
+        try:
+          fd.resolve_dependencies(self)
+        except: 
+          logging.exception("Error in %s" % p.scripts_json_filename)
+          raise
+    try:
+      self.self_check()
+    except:
+      logging.exception("Depender self check failed.  Continuing with abandon.")
 
-  def get_client_js(self, scripts, url):
+  def resolve_unqualified_component(self, component, preferred_package=None):
+    """
+    Returns a (package, component) tuple given only a component name.
+    This is useful when only the component is known (legacy scripts.json).
+
+    This is only possible when the name is unique or when
+    there's a preferred package (because we might prefer
+    the "current" package).
+    """
+    possibilities = self.unqualified_components.get(component, [])
+    if len(possibilities) == 0:
+      raise Exception("Could not find dependency %r." % component)
+    elif len(possibilities) == 1:
+      return possibilities[0].package.key, component
+    elif len(possibilities) > 1:
+      # Prefer dependencies inside the same package
+      if preferred_package is not None:
+        if component in self.packages[preferred_package].components:
+          LOGGER.warn("Multiple dependencies were possible for component %r" % component)
+          return (preferred_package, component)
+      else:
+        raise Exception("Could not resolve ambiguous dependency %r" % component)
+
+  def self_check(self):
+    """
+    Checks that no dependencies are unsatisfied.
+
+    TODO: Does not check that there are no cycles
+    in the dependency graph.
+    """
+    out = "Loaded components\n"
+    for package_name, package in sorted(self.packages.items()):
+      out += "\t%s:\n" % package_name
+      for c, fd in sorted(package.components.iteritems()):
+        out += "\t\t%s (%s)\n" % (c, fd.filename)
+
+    logging.info(out)
+
+    for p in self.packages.values():
+      for f in p.files:
+        for id in f.requires:
+          # This throws if it doesn't find something.
+          try:
+            self.get(id)
+          except:
+            logging.exception("Error in: " + f.filename)
+            raise
+          
+  def get(self, id):
+    """
+    Retrieves a FileData object given (package, component) pair.
+    """
+    pkg_key, component_key = id
+    if pkg_key not in self.packages:
+      raise Exception("Package not found while looking for id: %s " % repr(id))
+    p = self.packages[pkg_key]
+    if component_key not in p.components:
+      raise Exception("Component %s not found in package %s." % (component_key, pkg_key))
+    return p.components[component_key]
+
+  def get_client_js(self, components, url):
     """
     returns the javascript necessary to integrate with Depender.Client.js
+
+    @param components: Component ids loaded in this pass.
+    @param url: the url of the builder view
     """
     out = "\n\n"
-    out += "Depender.loaded.combine(['"
-    out += "','".join([ i.name for i in scripts ]) + "']);\n\n"
+    if len(components) > 0:
+      out += "Depender.loaded.combine(['"
+      out += "','".join([ "/".join(c) for c in components ]) + "']);\n\n"
     out += "Depender.setOptions({\n"
     out += "	builder: '" + url + "'\n"
     out += "});"
     return out;
+
+  def graph(self):
+    """
+    Returns a pydot.Dot object representing the dependency graph.
+    Requires pydot to be available.
+    """
+    import pydot
+    edges = set()
+    for p in self.packages.values():
+      for f in p.files:
+        for id in f.requires:
+          f2 = self.get(id)
+          edges.add( ("--".join([p.key, f.shortname]), "--".join([f2.package.key, f2.shortname])) )
+    return pydot.graph_from_edges(edges, directed=True)
+
+  def _get_transitive_dependencies_helper(self, target, excluded_set, accumulator, depth_limit=30):
+    """
+    @param target is a single required component id
+    @param excluded_set is a list of components already loaded or previously included
+    @param accumulator is an ordered list of components to load
+
+    It would be possible to combine excluded_set and accumulator into one
+    if python had built-in ordered sets, but note that excluded_set might
+    be non empty at the beginning.
+    """
+    if depth_limit <= 0:
+      raise Exception("Dependency depth limit exceeded, resolving: %s" % (str(target),) )
+    if target in excluded_set:
+      return
+    for c in self.get(target).requires:
+      if c not in excluded_set:
+        self._get_transitive_dependencies_helper(c, excluded_set, accumulator, depth_limit=depth_limit-1)
+    accumulator.append(target)
+    excluded_set.add(target)
+
+  def get_transitive_dependencies(self, required, excluded=None):
+    """
+    required and excluded are lists of (package, component) pairs
+
+    Returns an ordered list of (package, component) pairs.
+    """
+    required = set(required)
+    if excluded is None:
+      excluded = []
+    orig_excluded = excluded
+    excluded = set(excluded)
+    accumulator = []
+    for c in required:
+      self._get_transitive_dependencies_helper(c, excluded, accumulator)
+    logging.debug("Calculated dependencies: %s - %s: %s" % (repr(required), repr(orig_excluded), repr(accumulator)))
+    return accumulator
+
+  def expand_package(self, pkg):
+    """
+    Expands a package name into all its components.
+    """
+    return [ (pkg, c) for c in self.packages[pkg].components ]
+
+  def get_files(self, components, excluded_components=None):
+    """
+    Retrieves list of DataFile objects given required components.
+
+    Note that we have to expand excluded components into their
+    files: Say A depends on B, and (B,C) are colocated in one file.
+    If we already have C, we must already have B, even if we
+    don't know it.
+
+    TODO: arguably, this is a bug in get_client_js, which
+    should expand everything.
+    """
+    if excluded_components is None:
+      excluded_components = []
   
-  def get_output_filename(self):
-    """
-    returns the filename for the header if download=true
-    """
-    return self.conf.get('output filename', 'built.js')
-
-class Script(object):
-  def __init__(self, library, category, name, path, data, compressors, copyright, debug=False):
-    """
-    Instantiates a script object.
-    library - the library, as defined in config.json, to which the script belongs
-    category - the category, as defined in scripts.json, to which the script belongs
-    name - the name of the script (without the .js - so "Core", not "Core.js")
-    path - the path to the file relative to this application
-    data - the data associated with the script as defined in scripts.json; in particular, the dependencies
-    compressors - a list of compressors to apply to the script (["yui"] for example)
-    """
-    self.raw_deps = data["deps"]
-    self.description = data.get("desc")
-    self.category = category
-    self.path = path
-    self.library = library
-    self.name = name
-    self.copyright = copyright
-    self.debug = debug
-    content = file(self.path).read()
-
-    self.compressed_content = {}
-    if not self.debug:
-      for compressor_name, compressor in compressors.iteritems():
-        LOG.info("compressing %s.js with %s" %(name, compressor_name))
-        self.compressed_content[compressor_name] = compressor.compress(name, content)
-    self.compressed_content["none"] = content
+    # List of already processed or excluded
+    files_set = set()
+    excluded_files_set = set()
+    files = []
     
-  def __repr__(self):
-    return "Script(%s)" % self.name
+    for c in excluded_components:
+      excluded_files_set.add(self.get(c))
 
-class YUI(object):
-  def __init__(self, arguments=None):
-    """
-    creates an instance of the YUI compressor with default arguments or those specified.
-    arguments default to: "--type js --preserve-semi --line-break 150 --charset UTF-8"
-    """
-    if arguments is None:
-      arguments = [
-        "--type", "js",
-        "--preserve-semi",
-        "--line-break", "150",
-        "--charset", "UTF-8"
-      ]
-    self.arguments = arguments
-    self.executable = settings.DEPENDER_YUI_PATH
+    for c in components:
+      f = self.get(c)
+      if f not in files_set and f not in excluded_files_set:
+        files_set.add(f)
+        files.append(f)
+    return files
 
-  def compress(self, name, content):
-    """
-    compresses a script using the yui compressor
-    name - the name of the script (used for error reporting)
-    content - the content of the script
-    """
-    args = ["java", "-jar", self.executable]
-    args.extend(self.arguments)
-    pipe = subprocess.Popen(args=args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, error = pipe.communicate(input=content)
-    if pipe.returncode != 0:
-      import pdb
-      pdb.set_trace()
-      logging.debug(content);
-      raise Exception("YUI compressor failed on %s, out: %s, error: %s" % (name, out, error) )
-    return out
+class YamlFileData(object):
+  """Source file pointed to by a package.yml."""
+  def __init__(self, shortname, filename, package, metadata):
+    self.shortname = shortname
+    self.filename = filename
+    self.content = _force_unicode(file(filename).read())
+    self.metadata = metadata
+    self.package = package
+    self.provides = [(package.key, module) for module in metadata["provides"]]
+    self.requires = []
+    self.requires = [ self._parse_component_string(r) for r in metadata.get("requires", []) ]
 
+  def _parse_component_string(self, component):
+    """
+    Parses package:version/component string into (package, component).
+    """
+    # In package.yml files, the syntax is "package:version/component",
+    # and an empty package:version implies "current package".
+    # This code ignores version.
+    package, component = component.split("/", 2)
+    if package is "":
+      package_key = self.package.key
+    else:
+      package_key = package.split(":")[0]
+    return package_key, component
+
+class ScriptsJsonFileData(object):
+  """Source file pointed to by a scripts.json"""
+  def __init__(self, module_name, shortname, filename, package, metadata):
+    self.filename = filename
+    self.shortname = shortname
+    self.content = _force_unicode(file(filename).read())
+    self.package = package
+    self.metadata = metadata
+    self.provides = [ (package.key, module_name) ]
+
+  def resolve_dependencies(self, all_data):
+    """
+    We resolve dependencies after everything has been loaded, to 
+    be able to notice ambiguous dependencies.
+    """
+    self.requires = []
+    for dep in self.metadata["deps"]:
+      key = (self.package.key, dep)
+      if key in self.provides:
+        raise Exception("Package shouldn't depend on itself: %s" % repr(key))
+      self.requires.append( all_data.resolve_unqualified_component(dep, self.package.key) )
+        
+class YamlPackageData(object):
+  def __init__(self, package_filename):
+    self.components = {}
+    self.files = []
+    try:
+      self.metadata = yaml.load(file(package_filename))
+    except:
+      logging.exception("Could not parse: " + package_filename)
+      raise
+    rootdir = os.path.dirname(package_filename)
+    self.key = self.metadata["name"]
+    for source_file in self.metadata["sources"]:
+      filename = os.path.join(rootdir, source_file)
+      metadata = _parse_js_file(filename)
+      assert len(metadata["provides"]) > 0
+      try:
+        fd = YamlFileData(source_file, filename, self, metadata)
+      except:
+        logging.exception("Error processing: " + filename)
+        raise
+      self.files.append(fd)
+      for pkg_key, component in fd.provides:
+        assert pkg_key == self.key
+        if component in self.components:
+          raise Exception("Two files provide %s: %s and %s" % (component, self.components[component].filename, fd.filename))
+        self.components[component] = fd
+
+class ScriptsJsonPackage(object):
+  def __init__(self, package_name, scripts_json_filename):
+    self.components = {}
+    self.files = []
+    self.key = package_name
+    self.metadata = simplejson.load(file(scripts_json_filename))
+    self.scripts_json_filename = scripts_json_filename
+    rootdir = os.path.dirname(scripts_json_filename)
+    for category, components in self.metadata.iteritems():
+      for component, metadata in components.iteritems():
+        filename = os.path.join(rootdir, category, component) + ".js"
+        shortname = os.path.join(category, component)
+        if not os.path.exists(filename):  
+          raise Exception("File not found: " + filename)
+        fd = ScriptsJsonFileData(component, shortname, filename, self, metadata)
+        if component in self.components:
+          raise Exception("Two files provide %s: %s and %s" % (component, self.components[component].filename, fd.filename))
+        self.components[component] = fd
+        self.files.append(fd)
+
+  def rewrite(self):
+    """Edits the scripts to use the new YaML syntax."""
+    for f in self.files:
+      metadata = dict()
+      metadata["description"] = f.metadata.get("desc", "Unknown")
+      metadata["script"] = os.path.basename(f.filename)
+      metadata["requires"] = []
+      for package, component in f.requires:
+        if package == self.key:
+          metadata["requires"].append("/" + component)
+        else:
+          metadata["requires"].append(package + "/" + component)
+      metadata["provides"] = [ p[1] for p in f.provides ]
+      # Resolve symlinks
+      real_filename = os.path.realpath(f.filename)
+      logging.info("Editing: " + real_filename)
+      new_filename = f.filename + ".new"
+      new = file(new_filename, "w")
+      new.write("/*\n---\n")
+      new.write(yaml.dump(metadata))
+      new.write("\n...\n*/\n")
+      new.write(file(f.filename).read())
+      new.close()
+      os.rename(new_filename, real_filename)
+
+    package_data = dict()
+    package_data["name"] = self.key
+    package_data["sources"] = []
+    package_data["version"] = "Unknown"
+    package_data["copyright"] = "Unknown"
+    package_data["description"] = "Unknown"
+    target_dir = os.path.dirname(self.scripts_json_filename)
+    # package.yml is typically in the parent of the scripts.json dir
+    if os.path.basename(target_dir) == "Source":
+      target_dir = os.path.dirname(target_dir)
+    target_filename = os.path.join(target_dir, "package.yml")
+    for f in self.files:
+      common = os.path.commonprefix([target_filename, f.filename])
+      source_file = f.filename[len(common):]
+      package_data["sources"].append(source_file)
+    logging.info("Writing: " + target_filename)
+    out = file(target_filename, "w")
+    out.write(yaml.dump(package_data))
+    out.close()
+
+def _force_unicode(data):
+  """Encodings of the js files are unclear; force things
+  into unicode, somewhat hackily."""
+  try:
+    data = unicode(data, "utf-8")
+  except UnicodeDecodeError:
+    data = unicode(data, "latin1")
+  return data
+          
+def _parse_js_file(filename):
+  """Find yaml section in javascript file."""
+  data = _force_unicode(file(filename).read())
+
+  m = YAML_SECTION.match(data)
+  if not m:
+    raise Exception("Could not succesfully find YAML section in %r." % filename)
+    return None
+  try:  
+    return yaml.load(m.groups(0)[0])    
+  except:
+    logging.exception("Could not parse: " + filename)
+    raise
+
+#############################################
+#
+# Below are commands run by the "main", which provide
+# some handy utilities.
+#
+# TODO(philip): Move these into management commands.
+def graph(data, args):
+  if len(args) != 1:
+    logging.fatal("Expected output filename.")
+    return 1
+  g = data.graph()
+  g.write_png(args[0])
+  print "Wrote " + args[0]
+
+def resolve(data, args):
+  required = args[0].split(",")
+  if len(args) > 1:
+    excluded = args[1].split(",")
+  else:
+    excluded = []
+  def make_ids(data):
+    return [ tuple(x.split("/", 2)) for x in data ]
+  print data.get_transitive_dependencies(make_ids(required), make_ids(excluded))
+
+# TODO: The migration of these commands into Django management commands
+# is already in progress!
+if __name__ == "__main__":
+  logging.basicConfig(level=logging.INFO)
+  import sys
+  yamls = []
+  scripts_json = []
+
+  paths = sys.argv[1].split(",")
+  for path in paths:
+    if path.endswith(".yml"):
+      yamls.append(path)
+    elif path.endswith(".json"):
+      scripts_json.append(path.split(":", 2))
+    else:
+      raise Exception("Unexpected path: " + path)
+  data = DependerData(yamls, scripts_json)
+  command = sys.argv[2]
+
+  if command == "graph":
+    sys.exit(graph(data, sys.argv[3:]) or 0)
+  elif command == "resolve":
+    sys.exit(resolve(data, sys.argv[3:]) or 0)
+  else:
+    raise Exception("Unrecognized command: " + command)
