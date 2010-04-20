@@ -23,7 +23,18 @@ import os
 import logging
 
 logging.basicConfig(level=logging.INFO)
-DEPENDER_ROOT = os.path.abspath(os.path.dirname(__file__) + "/..")
-DEPENDER_CONFIG_JSON = os.path.join(os.path.dirname(__file__), "../../config/config.json")
+
+
+# Configuration of MooTools Depender for Django
+# =============================================
+
+DEPENDER_PACKAGE_YMLS = (
+  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "core", "package.yml")),
+  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "more", "package.yml")),
+)
+DEPENDER_SCRIPTS_JSON = []
+
+# Set to true to re-load all JS every time. (slowish)
+DEPENDER_DEBUG = os.getenv("DEPENDER_DEBUG", "0").lower() not in ["0","false",""]
+
 DEPENDER_YUI_PATH = os.path.join(os.path.dirname(__file__), "../../compressors/yuicompressor-2.4.2.jar")
-DEPENDER_DEBUG = False

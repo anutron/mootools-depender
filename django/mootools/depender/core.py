@@ -39,7 +39,7 @@ import logging
 # Matches the bit inbetween --- and ...
 YAML_SECTION = re.compile(".*^---$(.*)^\.\.\.$.*", re.MULTILINE | re.DOTALL)
 
-LOGGER = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 class DependerData(object):
   """
@@ -80,12 +80,12 @@ class DependerData(object):
         try:
           fd.resolve_dependencies(self)
         except: 
-          logging.exception("Error in %s" % p.scripts_json_filename)
+          LOG.exception("Error in %s" % p.scripts_json_filename)
           raise
     try:
       self.self_check()
     except:
-      logging.exception("Depender self check failed.  Continuing with abandon.")
+      LOG.exception("Depender self check failed.  Continuing with abandon.")
 
   def resolve_unqualified_component(self, component, preferred_package=None):
     """
@@ -105,7 +105,7 @@ class DependerData(object):
       # Prefer dependencies inside the same package
       if preferred_package is not None:
         if component in self.packages[preferred_package].components:
-          LOGGER.warn("Multiple dependencies were possible for component %r" % component)
+          LOG.warn("Multiple dependencies were possible for component %r" % component)
           return (preferred_package, component)
       else:
         raise Exception("Could not resolve ambiguous dependency %r" % component)
@@ -123,7 +123,7 @@ class DependerData(object):
       for c, fd in sorted(package.components.iteritems()):
         out += "\t\t%s (%s)\n" % (c, fd.filename)
 
-    logging.info(out)
+    LOG.info(out)
 
     for p in self.packages.values():
       for f in p.files:
@@ -132,7 +132,7 @@ class DependerData(object):
           try:
             self.get(id)
           except:
-            logging.exception("Error in: " + f.filename)
+            LOG.exception("Error in: " + f.filename)
             raise
           
   def get(self, id):
@@ -211,7 +211,7 @@ class DependerData(object):
     accumulator = []
     for c in required:
       self._get_transitive_dependencies_helper(c, excluded, accumulator)
-    logging.debug("Calculated dependencies: %s - %s: %s" % (repr(required), repr(orig_excluded), repr(accumulator)))
+    LOG.debug("Calculated dependencies: %s - %s: %s" % (repr(required), repr(orig_excluded), repr(accumulator)))
     return accumulator
 
   def expand_package(self, pkg):
@@ -269,11 +269,17 @@ class YamlFileData(object):
     # In package.yml files, the syntax is "package:version/component",
     # and an empty package:version implies "current package".
     # This code ignores version.
-    package, component = component.split("/", 2)
-    if package is "":
+    package_component = component.split("/", 2)
+    if len(package_component) == 1:
       package_key = self.package.key
+      component = package_component[0]
     else:
-      package_key = package.split(":")[0]
+      package, component = package_component
+      if package is "":
+        LOG.warning("Empty package name in component '%s'; assuming '%s'" % (component, self.package.key))
+        package_key = self.package.key
+      else:
+        package_key = package.split(":")[0]
     return package_key, component
 
 class ScriptsJsonFileData(object):
@@ -305,7 +311,7 @@ class YamlPackageData(object):
     try:
       self.metadata = yaml.load(file(package_filename))
     except:
-      logging.exception("Could not parse: " + package_filename)
+      LOG.exception("Could not parse: " + package_filename)
       raise
     rootdir = os.path.dirname(package_filename)
     self.key = self.metadata["name"]
@@ -316,7 +322,7 @@ class YamlPackageData(object):
       try:
         fd = YamlFileData(source_file, filename, self, metadata)
       except:
-        logging.exception("Error processing: " + filename)
+        LOG.exception("Error processing: " + filename)
         raise
       self.files.append(fd)
       for pkg_key, component in fd.provides:
@@ -360,7 +366,7 @@ class ScriptsJsonPackage(object):
       metadata["provides"] = [ p[1] for p in f.provides ]
       # Resolve symlinks
       real_filename = os.path.realpath(f.filename)
-      logging.info("Editing: " + real_filename)
+      LOG.info("Editing: " + real_filename)
       new_filename = f.filename + ".new"
       new = file(new_filename, "w")
       new.write("/*\n---\n")
@@ -385,7 +391,7 @@ class ScriptsJsonPackage(object):
       common = os.path.commonprefix([target_filename, f.filename])
       source_file = f.filename[len(common):]
       package_data["sources"].append(source_file)
-    logging.info("Writing: " + target_filename)
+    LOG.info("Writing: " + target_filename)
     out = file(target_filename, "w")
     out.write(yaml.dump(package_data))
     out.close()
@@ -410,7 +416,7 @@ def _parse_js_file(filename):
   try:  
     return yaml.load(m.groups(0)[0])    
   except:
-    logging.exception("Could not parse: " + filename)
+    LOG.exception("Could not parse: " + filename)
     raise
 
 #############################################
@@ -421,7 +427,7 @@ def _parse_js_file(filename):
 # TODO(philip): Move these into management commands.
 def graph(data, args):
   if len(args) != 1:
-    logging.fatal("Expected output filename.")
+    LOG.fatal("Expected output filename.")
     return 1
   g = data.graph()
   g.write_png(args[0])
@@ -440,7 +446,7 @@ def resolve(data, args):
 # TODO: The migration of these commands into Django management commands
 # is already in progress!
 if __name__ == "__main__":
-  logging.basicConfig(level=logging.INFO)
+  LOG.basicConfig(level=logging.INFO)
   import sys
   yamls = []
   scripts_json = []
