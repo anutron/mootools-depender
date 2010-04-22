@@ -132,7 +132,11 @@ To run the Django depender server you should simply run this from the command li
 
 If you want you can force the server to run in debug mode like so:
 
-	$ DESKTOP_DEPENDER_DEBUG=1 env/bin/python django/mootools/manage.py runserver
+	$ DEPENDER_DEBUG=1 env/bin/python django/mootools/manage.py runserver
+
+You can have Depender check your dependency map thusly:
+
+	$ env/bin/python django/mootools/manage.py depender_check
 
 For more about virtualenv see [http://pypi.python.org/pypi/virtualenv](http://pypi.python.org/pypi/virtualenv). Once you've started the server you should be able to hit it with a request for some JS. Like this:
 
