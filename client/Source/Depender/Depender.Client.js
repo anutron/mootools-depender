@@ -83,6 +83,7 @@ var Depender = {
 		var script = new Element('script', {
 			src: src.join('&'),
 			events: {
+				//IE doesn't fire a load event for scripts, so we monitor the ready state
 				readystatechange: function(){
 					if (['loaded', 'complete'].contains(this.readyState) && !finished) {
 						finished = true;
@@ -113,3 +114,56 @@ var Depender = {
 
 $extend(Depender, new Events);
 $extend(Depender, new Options);
+
+
+
+(function(){
+	if (!Browser.Engine.trident) return;
+	/*
+		I am going to hell for this.
+		
+		Override Mootool's $ method and its Element.implement method for IE.
+		
+		Override $ to disable the caching elements whenever Element.implement is called.
+		
+		This hack exists because we load dependencies on the fly with Depender and IE does not
+		expose the element prototype. Thus, if we extend an element (through $) once, and then
+		subsequently implement new properties onto the Element prototype, we need to re-apply
+		them to any element instances fetched with MooTools.
+		
+		Like I said, I'm going to hell for this.
+		
+	*/
+	
+	var impl = Element.implement;
+	//keep track of the "version" that the element has been implemented
+	var version = 0;
+	Element.implement = function() {
+		version++;
+		impl.apply(Element, arguments);
+	};
+	var old$ = document.id;
+	document.id = (function(){
+
+		return function(el, nocash, doc){
+			el = old$(el, nocash, doc);
+			//if the version of this element is behind the current
+			//Element implementation, re-process it
+			if (el && el.$version != version
+			    && el.$family
+			    //mootools doesn't extend window, document, whitespace, or textnode
+			    //in the same way as it does Element; we exclude them here
+			    && el.$family.name != 'window'
+			    && el.$family.name != 'document'
+			    && el.$family.name != 'whitespace'
+			    && el.$family.name != 'textnode') {
+				el.$family = null;
+				el = old$(el);
+				el.$version = version;
+			}
+			return el;
+		};
+
+	})();
+
+})();
