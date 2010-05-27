@@ -28,14 +28,20 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 DEPENDER_PACKAGE_YMLS = (
-  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "core", "package.yml")),
-  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "more", "package.yml")),
+  "/Users/aaron/Development/mootools/core/package.yml",
+  "/Users/aaron/Development/mootools/more/package.yml",
+  "/Users/aaron/Development/mootools/table/package.yml",
+  "/Users/aaron/Development/mootools/touch/package.yml",
+  "/Users/aaron/Development/mootools/art/package.yml",
+  "/Users/aaron/Development/mootools/slick/package.yml",
+  "/Users/aaron/Development/mootools/color/package.yml",
+  "/Users/aaron/Development/mootools/widgets/package.yml",
   # Don't forget to add the depender client to your libraries!
   os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "client", "package.yml")),
 )
 DEPENDER_SCRIPTS_JSON = []
 
 # Set to true to re-load all JS every time. (slowish)
-DEPENDER_DEBUG = os.getenv("DEPENDER_DEBUG", "0").lower() not in ["0","false",""]
+DEPENDER_DEBUG = True; ##os.getenv("DEPENDER_DEBUG", "0").lower() not in ["0","false",""]
 
 DEPENDER_YUI_PATH = os.path.join(os.path.dirname(__file__), "../../compressors/yuicompressor-2.4.2.jar")

@@ -3,3 +3,4 @@ config/config.json
 *.pyc
 /depender.egg-info
 /env
+/django/src/depender.egg-info
