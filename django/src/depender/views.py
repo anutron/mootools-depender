@@ -14,11 +14,7 @@ from depender.core import DependerData
 LOG = logging.getLogger(__name__)
 
 def make_depender():
-  try:
-    return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON)
-  except:
-    logging.exception("Could not build JavaScript dependency map.")
-    return None
+  return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON)
 
 depender = make_depender()
 
@@ -79,9 +75,10 @@ def build(request):
   client = get("client")
   compression = get("compression")
 
-  dpdr = get_depender(reset)
-  if dpdr is None:
-    return HttpResponse("alert('Javascript dependency loader unavailable. Contact your administrator to check server logs for details.')")
+  try:
+    dpdr = get_depender(reset)
+  except Exception, inst:
+    return HttpResponse("alert('Javascript dependency loader unavailable. Contact your administrator to check server logs for details.\n [" + str(inst).replace("'", "\\'") +  "]')")
     
   if compression is None:
     compression = "none"
