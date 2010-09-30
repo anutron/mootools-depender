@@ -7,6 +7,7 @@ Quick Start (Django version)
 -----------
 
 		$ git clone http://github.com/anutron/mootools-depender.git
+		$ cd mootools-depender
 		$ git submodule update --init
 		$ virtualenv env
 		$ env/bin/python django/depender/setup.py develop
