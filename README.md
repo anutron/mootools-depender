@@ -10,7 +10,7 @@ Quick Start (Django version)
 		$ cd mootools-depender
 		$ git submodule update --init
 		$ virtualenv env
-		$ env/bin/python django/depender/setup.py develop
+		$ env/bin/python django/setup.py develop
 		$ env/bin/python django/mootools/manage.py runserver
 		
 		Then open http://localhost:8000/depender/build?requireLibs=Core to get MooTools Core.
