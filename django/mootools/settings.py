@@ -28,14 +28,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 DEPENDER_PACKAGE_YMLS = (
-  "/Users/aaron/Development/mootools/core/package.yml",
-  "/Users/aaron/Development/mootools/more/package.yml",
-  "/Users/aaron/Development/mootools/table/package.yml",
-  "/Users/aaron/Development/mootools/touch/package.yml",
-  "/Users/aaron/Development/mootools/art/package.yml",
-  "/Users/aaron/Development/mootools/slick/package.yml",
-  "/Users/aaron/Development/mootools/color/package.yml",
-  "/Users/aaron/Development/mootools/widgets/package.yml",
+  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "core", "package.yml")),
+  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "libs", "more", "package.yml")),
   # Don't forget to add the depender client to your libraries!
   os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "client", "package.yml")),
 )
