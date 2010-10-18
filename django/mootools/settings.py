@@ -34,6 +34,8 @@ DEPENDER_PACKAGE_YMLS = (
   os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "client", "package.yml")),
 )
 DEPENDER_SCRIPTS_JSON = []
+DEPENDER_INCLUDE_BLOCKS = []
+DEPENDER_EXCLUDE_BLOCKS = []
 
 # Set to true to re-load all JS every time. (slowish)
 DEPENDER_DEBUG = True; ##os.getenv("DEPENDER_DEBUG", "0").lower() not in ["0","false",""]

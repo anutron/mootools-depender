@@ -8,6 +8,7 @@ import logging
 from django.http import HttpResponse
 from django.conf import settings
 from django.core import urlresolvers
+import re
 
 from depender.core import DependerData
 
@@ -50,12 +51,12 @@ def build(request):
     builds a library given required scripts to includes and other arguments
     accepted URL arguments:
 
-    require - a comma separated list of *files*(components) to require; can also be specified in the php style as "require[]=foo&require[]=bar"
-    requireLibs - a comma separated list of *libraries*(packages) to require - these are the names defined in our *congfig.json* in the *libs* section. So, for example, *requireLibs=mootools-core,mootools-more* using the default config would include both the complete inventories of MooTools Core and More. This can also be specified as a comma separated list or the php style (*requireLibs[]=mootools-core&requireLibs[]=mootools-more*).
+    require - a comma separated list of *files*(components) to require; can also be specified as "require=foo&require=bar"
+    requireLibs - a comma separated list of *libraries*(packages) to require - these are the names defined in our *congfig.json* in the *libs* section. So, for example, *requireLibs=mootools-core,mootools-more* using the default config would include both the complete inventories of MooTools Core and More. This can also be specified as a comma separated list oras (*requireLibs=mootools-core&requireLibs=mootools-more*).
     exclude - exactly like the *require* value, except it's a list of files to exclude. This is useful if you have already loaded some scripts and now you require another. You can specify the scripts you already have and the one you now need, and the library will return only those you do not have.
     excludeLibs - just like the *exclude* option but instead you can specify entire libraries.
-    NOT IMPLEMENTED: cache - if set to *true* you'll be returned a cached version of the script even if the server is set to *false* and vice versa.
     compression - you'll be returned the compression type you specify regardless of the server default. Note that if you specify a compression type that the server does not allow, you'll be returned which ever one it does. If it does not support compression at all, you will not be returned a compressed file. You can also specify "none" which is useful for development and debugging.
+    blocks - specify which code blocks to *include*. You can specify them as blocks=1.2compat,1.3compat, as blocks=1.2compat&block=1.3compat or blocks=all (to include all code blocks)
   """
   def get(name):
     return request.GET.get(name)
@@ -74,7 +75,13 @@ def build(request):
   reset = get("reset")
   client = get("client")
   compression = get("compression")
+  blocks = get_arr("blocks")
+  exclude_blocks = get_arr("excludeBlocks")
 
+  if len(blocks) == 0:
+    blocks = settings.DEPENDER_INCLUDE_BLOCKS
+  if len(exclude_blocks) == 0:
+    exclude_blocks = settings.DEPENDER_EXCLUDE_BLOCKS
   try:
     dpdr = get_depender(reset)
   except Exception, inst:
@@ -96,6 +103,7 @@ def build(request):
   deps = dpdr.get_transitive_dependencies(required, excluded)
   files = dpdr.get_files(deps, excluded)
   output = "//No files included for build"
+  js = ""
 
   if len(files) > 0:
     #TODO: add copyrights
@@ -105,16 +113,44 @@ def build(request):
     output += "\n//This library: " + request.build_absolute_uri(request.get_full_path())
     output += "\n//Contents: "
     output += ", ".join([ i.package.key + ":" + i.shortname for i in files ])
-    output += "\n\n"
-  
+
     for f in files:
-      output += "// Begin: " + f.shortname + "\n"
-      output += f.content + u"\n\n"
+      js += "// Begin: " + f.shortname + "\n"
+      js += f.content + u"\n\n"
 
   if client == "true":
     url = request.build_absolute_uri(
       urlresolvers.reverse("depender.views.build"))
-    output += dpdr.get_client_js(deps, url)
+    js += dpdr.get_client_js(deps, url)
+
+  included_blocks = []
+  def block_matcher(matchobj):
+    """
+    Finds code blocks that should be included/excluded based on url params.
+    JS code can be marked with named blocks, for example:
+    
+      //<1.2compat>
+      ...compat code
+      //</1.2compat>
+    
+    The request to Depender can include ?blocks=all or ?blocks=1.2compat,1.3compat,etc
+    and the block will be removed or included accordingly.
+    You can also state ?excludeBlocks=... to include all blocks but a specific list
+    """
+    match = matchobj.group(0)
+    block = re.search('<(.*?)>', match).group(1)
+    if (block in blocks or 'all' in blocks or len(blocks) == 0) and\
+      not (block in exclude_blocks or 'all' in exclude_blocks):
+      if block not in included_blocks:
+        included_blocks.append(block)
+      return match
+    else:
+      return ''
+  js = re.sub(r'((/[/*])\s*<([^>]*)>.+?<\/\3>(?:\s*\*/)?(?s))', block_matcher, js)
+  if len(included_blocks) > 0:
+    output += "\n//included blocks: " + ", ".join(included_blocks)
+  output += "\n\n"
+  output += js
 
   response = HttpResponse(output, content_type="application/x-javascript")
   if download == "true":
