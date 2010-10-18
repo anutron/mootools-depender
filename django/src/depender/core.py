@@ -45,7 +45,7 @@ class DependerData(object):
   """
   Main class that holds all the data.
   """
-  def __init__(self, package_ymls=None, script_jsons=None):
+  def __init__(self, package_ymls=None, script_jsons=None, exclude_blocks=None):
     """
     package_ymls is list of filenames; script_jsons
     is list of (library_name, filename) pairs.
@@ -59,6 +59,7 @@ class DependerData(object):
     self.unqualified_components = {}
 
     self.script_json_packages = []
+    self.exclude_blocks = exclude_blocks
 
     package_ymls = package_ymls or []
     self.yaml_packages = [ YamlPackageData(f) for f in package_ymls ]
@@ -82,6 +83,11 @@ class DependerData(object):
         except: 
           LOG.exception("Error in %s" % p.scripts_json_filename)
           raise
+    try:
+      self.strip_blocks()
+    except:
+      LOG.exception("Depender could not strip the required code blocks.")
+
     try:
       self.self_check()
     except:
@@ -134,7 +140,25 @@ class DependerData(object):
           except:
             LOG.exception("Error in: " + f.filename)
             raise
-          
+  
+  def strip_blocks(self):
+    """
+    Finds code blocks that should be excluded based settings.
+    JS code can be marked with named blocks, for example:
+
+      //<1.2compat>
+      ...compat code
+      //</1.2compat>
+
+    """
+    if self.exclude_blocks and len(self.exclude_blocks) > 0:
+      for package_name, package in self.packages.items():
+        for c, fd in package.components.iteritems():
+          for block in self.exclude_blocks:
+            JS_BLOCKS = re.compile(r'/[/*]\s*<' + block + '>.+?<\/' + block + '>(?:\s*\*/)?(?s)', re.MULTILINE)
+            fd.content = JS_BLOCKS.sub('/* compat block ' + block + ' removed */', fd.content)
+    print fd.content
+  
   def get(self, id):
     """
     Retrieves a FileData object given (package, component) pair.

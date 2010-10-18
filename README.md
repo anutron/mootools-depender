@@ -49,6 +49,7 @@ Depender can:
 * can be configured to return compressed files; this compression only runs on startup
 * can return libraries based on individual requirements (require=Core/Request) OR entire libraries (requireLib=Core)
 * as a django app, it can be deployed inside another django app, meaning that you only need to start one server for your application
+* can remove MooTools code blocks (compat layers)
 
 Overview
 -------
@@ -103,8 +104,7 @@ Inside of `django/mootools` you'll find `settings.py`. This file contains all th
  - DEPENDER_PACKAGE_YMLS - a list of package.yml files to include; defaults to the submodules included in this repository (MooTools Core and MooTools More) as well as the Depender Client.
  - DEPENDER_SCRIPTS_JSON - a list of scripts.json manifest files (these are deprecated manifests from < Mootools 1.3 era).
  - DEPENDER_YUI_PATH - the path to the YUI compressor jar.
- - DEPENDER_INCLUDE_BLOCKS - the default list of blocks to include in the build; if not set it will include all code blocks. You can also include "all" for the same effect. This can be overridden with the blocks parameter. See below for the definition of a "code block".
- - DEPENDER_EXCLUDE_BLOCKS - the default list of blocks to exclude in the build. Can be set to "all" to exclude all blocks; defaults to not exclude any. When the include and exclude lists collide, exclude wins. Can be overridden with the excludeBlocks paramter in the request.
+ - DEPENDER_EXCLUDE_BLOCKS - the default list of blocks to exclude in the build. Can be set to "all" to exclude all blocks; defaults to not exclude any.
 
 Code Blocks
 -----------
@@ -119,7 +119,7 @@ MooTools supports compatibility and features through commented code blocks. Exam
 		/* </some feature> */
 	// </1.2 compatibility>
 
-These can be excluded or included at request time by configuration in settings.py or in the request parameters.
+These can be excluded or included by configuration in settings.py.
 
 Initialization
 --------------
@@ -173,8 +173,6 @@ To request a library, you can specify four arguments for the contents of the fil
 * requireLibs - a comma separated list of *libraries* to require - these are the names defined the package names in each libary's package.yml or in the settings for those projects that use scripts.json. So, for example, *requireLibs=Core,More* using the default config would include both the complete inventories of MooTools Core and More. This can also be specified as a comma separated list or as `requireLibs=Core&requireLibs=More`).
 * exclude - exactly like the `require` value, except it's a list of files to exclude. This is useful if you have already loaded some scripts and now you require another. You can specify the scripts you already have and the one you now need, and the library will return only those you do not have.
 * excludeLibs - just like the `exclude` option but instead you can specify entire libraries.
-* blocks - specify which code blocks to *include*. You can specify them as blocks=1.2compat,1.3compat, as blocks=1.2compat&block=1.3compat or blocks=all (to include all code blocks).
-* excludeBlocks - You can also state ?excludeBlocks=... to include all blocks but a specific list
 
 The Depender Client
 -------------------
