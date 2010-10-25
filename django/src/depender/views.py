@@ -15,7 +15,10 @@ from depender.core import DependerData
 LOG = logging.getLogger(__name__)
 
 def make_depender():
-  return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON, settings.DEPENDER_EXCLUDE_BLOCKS)
+  exclude = []
+  if hasattr(settings, 'DEPENDER_EXCLUDE_BLOCKS'):
+    exclude = settings.DEPENDER_EXCLUDE_BLOCKS
+  return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON, exclude)
 
 depender = make_depender()
 
