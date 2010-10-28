@@ -13,12 +13,12 @@ import re
 from depender.core import DependerData
 
 LOG = logging.getLogger(__name__)
+exclude_blocks = []
+if hasattr(settings, 'DEPENDER_EXCLUDE_BLOCKS'):
+  exclude_blocks = settings.DEPENDER_EXCLUDE_BLOCKS
 
 def make_depender():
-  exclude = []
-  if hasattr(settings, 'DEPENDER_EXCLUDE_BLOCKS'):
-    exclude = settings.DEPENDER_EXCLUDE_BLOCKS
-  return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON, exclude)
+  return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON, exclude_blocks)
 
 depender = make_depender()
 
@@ -109,9 +109,9 @@ def build(request):
     output += "\n//Contents: "
     output += ", ".join([ i.package.key + ":" + i.shortname for i in files ])
 
-    if len(settings.DEPENDER_EXCLUDE_BLOCKS) > 0:
+    if len(exclude_blocks) > 0:
       output += "\n//Excluded blocks: "
-      output += ", ".join(settings.DEPENDER_EXCLUDE_BLOCKS)
+      output += ", ".join(exclude_blocks)
 
     output += "\n\n"
 
