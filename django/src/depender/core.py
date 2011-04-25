@@ -53,7 +53,7 @@ class DependerData(object):
     if package_ymls is None:
       package_ymls = []
     if script_jsons is None:
-      scripts_json = []
+      script_jsons = []
 
     self.packages = {}
     self.unqualified_components = {}

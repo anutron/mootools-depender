@@ -177,3 +177,19 @@ To request a library, you can specify four arguments for the contents of the fil
 The Depender Client
 -------------------
 The Depender app includes a client side component that integrates with this server. It allows you to interact with the server in your application code, requiring components and executes a callback when the load. See [the docs for the client for details](client/Docs/Depender.Client.md).
+
+The Command Line Option
+-----------------------
+The depender can also generate concatenated JavaScript files on the command line:
+
+    $ env/bin/python django/src/depender/cli.py django/mootools/settings.py -R Core         > mootools-core.js
+    $ env/bin/python django/src/depender/cli.py django/mootools/settings.py -R More -E Core > mootools-more.js
+
+Usage: cli.py settings.py [options]
+
+  -r --require component     a comma separated list of components to require. e.g. -r Core/Class,Core/Array
+  -R --requireLibs library   a comma separated list of libraries to require. e.g. -R Core,More
+  -e --exclude component     exactly like the `require` value, except it's a list of components to exclude.
+  -E --excludeLibs library   exactly like the `exclude` value, except it's a list of libraries to exclude.
+  -c --compression           turn on compression. Not implemented yet.
+
