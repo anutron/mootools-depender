@@ -151,13 +151,16 @@ class DependerData(object):
       //</1.2compat>
 
     """
+    print_content = False
     if self.exclude_blocks and len(self.exclude_blocks) > 0:
       for package_name, package in self.packages.items():
         for c, fd in package.components.iteritems():
           for block in self.exclude_blocks:
             JS_BLOCKS = re.compile(r'/[/*]\s*<' + block + '>.+?<\/' + block + '>(?:\s*\*/)?(?s)', re.MULTILINE)
             fd.content = JS_BLOCKS.sub('/* compat block ' + block + ' removed */', fd.content)
-    print fd.content
+            print_content = True
+    if print_content:
+      print fd.content
   
   def get(self, id):
     """
