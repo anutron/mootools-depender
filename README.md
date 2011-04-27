@@ -182,6 +182,9 @@ The Command Line Option
 -----------------------
 The depender can also generate concatenated JavaScript files on the command line:
 
+    $ git submodule update --init
+    $ virtualenv env
+    $ env/bin/python django/setup.py develop
     $ env/bin/python django/src/depender/cli.py django/mootools/settings.py -R Core         > mootools-core.js
     $ env/bin/python django/src/depender/cli.py django/mootools/settings.py -R More -E Core > mootools-more.js
 

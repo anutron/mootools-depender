@@ -68,21 +68,25 @@ def build(options, dpdr):
 
   deps = dpdr.get_transitive_dependencies(required, excluded)
   files = dpdr.get_files(deps, excluded)
-  output = "//No files included for build"
+  outputs = []
 
   if len(files) > 0:
     #TODO: add copyrights
-    output = u""
+    output = ""
     output += "\n//This library: %s" % (" ".join(sys.argv),)
     output += "\n//Contents: "
     output += ", ".join([ i.package.key + ":" + i.shortname for i in files ])
     output += "\n\n"
+    outputs.append(output)
 
     for f in files:
-      output += "// Begin: " + f.shortname + "\n"
-      output += f.content + u"\n\n"
+      outputs.append("// Begin: " + f.shortname + "\n")
+      outputs.append(f.content.encode('utf-8'))
+      outputs.append("\n\n")
+  else:
+    outputs.append("//No files included for build")
 
-  print output
+  print "".join(outputs)
 
 def main():
   usage = "usage: %prog settings.py [options]"
