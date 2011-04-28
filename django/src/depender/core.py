@@ -436,12 +436,40 @@ def _force_unicode(data):
   except UnicodeDecodeError:
     data = unicode(data, "latin1")
   return data
-          
+
+def _dojo_parse(data, filename):
+  data = re.sub(r'\/\/.*?\n', '', data)
+  deps = {
+    'requires': [], 'provides': []
+  }
+  dojo_provision = get_dojo_provision(filename)
+  if not dojo_provision:
+    return
+
+  deps['provides'] = re.findall(r'dojo.provide\("(.*?)"\);', data)
+  if len(deps['provides']) > 0:
+    if dojo_provision not in deps['provides']:
+      deps['provides'].append(dojo_provision)
+  else:
+    deps['provides'] = [dojo_provision]
+  deps['requires'] = re.findall(r'dojo.require\("(.*?)"\);', data)
+
+  return deps
+
+def get_dojo_provision(filename):
+  # total hack
+  if filename.find('dojo-1.6/') != -1:
+   return re.sub(r'\.js$', '', re.sub('/', '.', filename.split('dojo-1.6/')[-1]))
+
 def _parse_js_file(filename):
   """Find yaml section in javascript file."""
   data = _force_unicode(file(filename).read())
 
   m = YAML_SECTION.match(data)
+  if not m:
+    m = _dojo_parse(data, filename)
+    if m:
+      return m
   if not m:
     raise Exception("Could not succesfully find YAML section in %r." % filename)
     return None
