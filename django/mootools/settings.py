@@ -10,12 +10,18 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+  'django.middleware.common.CommonMiddleware',
+  'djangomako.middleware.MakoMiddleware',
 )
 
 ROOT_URLCONF = 'mootools.urls'
 
 INSTALLED_APPS = (
     'depender'
+)
+
+MAKO_TEMPLATE_DIRS = (
+  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "depender", "templates")),
 )
 
 # Depender configuration
@@ -35,7 +41,7 @@ DEPENDER_PACKAGE_YMLS = (
 )
 DEPENDER_SCRIPTS_JSON = []
 DEPENDER_EXCLUDE_BLOCKS = []
-
+BUILDER_PACKAGES = ['Core', 'More']
 # Set to true to re-load all JS every time. (slowish)
 DEPENDER_DEBUG = True; ##os.getenv("DEPENDER_DEBUG", "0").lower() not in ["0","false",""]
 

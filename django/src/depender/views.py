@@ -8,6 +8,8 @@ import logging
 from django.http import HttpResponse
 from django.conf import settings
 from django.core import urlresolvers
+from djangomako.shortcuts import render_to_response, render_to_string
+from markdown import markdown
 import re
 
 from depender.core import DependerData
@@ -120,8 +122,11 @@ def build(request):
       output += f.content + u"\n\n"
 
   if client == "true":
-    url = request.build_absolute_uri(
-      urlresolvers.reverse("depender.views.build"))
+    try:
+      url = request.build_absolute_uri(
+        urlresolvers.reverse("depender.views.build"))
+    except Exception:
+      url = "/depender/build"
     output += dpdr.get_client_js(deps, url)
 
   response = HttpResponse(output, content_type="application/x-javascript")
@@ -129,6 +134,37 @@ def build(request):
     response['Content-Disposition'] = 'attachment; filename=built.js'
   return response
 build.login_notrequired = True
+
+def builder(request):
+  dpdr = get_depender(False)
+  packages = {}
+  #Core, More, etc
+  for p in settings.BUILDER_PACKAGES:
+    if not hasattr(packages, p):
+      packages[p] = {}
+    #Fx, Element, etc
+    for name, component in dpdr.packages[p].components.iteritems():
+      if not hasattr(packages[p], component.filename):
+        packages[p][component.filename] = {
+          'provides': [],
+          'requires': []
+        }
+      packages[p][component.filename]['provides'].extend(component.provides)
+      packages[p][component.filename]['requires'].extend(component.requires)
+  def get_provides(package, filename):
+    return [pc[1] for pc in packages[package][filename]['provides']]
+  def get_depends(package, filename):
+    return [pc[0] + '/' + pc[1] for pc in packages[package][filename]['requires']]
+  return render_to_response('packager.mako', 
+    {
+      'packages': settings.BUILDER_PACKAGES,
+      'package_data': packages,
+      'get_provides': get_provides,
+      'get_depends': get_depends,
+      'dpdr': dpdr,
+      'markdown': markdown
+    }
+  )
 
 def test(request):
   #this seems silly
