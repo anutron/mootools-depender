@@ -137,6 +137,7 @@ build.login_notrequired = True
 
 def builder(request):
   dpdr = get_depender(False)
+  template = request.REQUEST.get('template', 'packager.mako')
   packages = {}
   #Core, More, etc
   for p in settings.BUILDER_PACKAGES:
@@ -155,7 +156,7 @@ def builder(request):
     return [pc[1] for pc in packages[package][filename]['provides']]
   def get_depends(package, filename):
     return [pc[0] + '/' + pc[1] for pc in packages[package][filename]['requires']]
-  return render_to_response('packager.mako', 
+  return render_to_response(template, 
     {
       'packages': settings.BUILDER_PACKAGES,
       'package_data': packages,
