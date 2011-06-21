@@ -46,7 +46,7 @@
 								%>
 								<tr class="${klass}">
 									<th>${key.capitalize()}</th> 
-									<td><p>${markdown(dpdr.packages[p].metadata[key])}</p></td>
+									<td>${markdown(dpdr.packages[p].metadata[key])}</td>
 								</tr> 
 							% endif
 						% endfor
