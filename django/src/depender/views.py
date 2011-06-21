@@ -65,11 +65,11 @@ def build(request):
   def get(name):
     return request.GET.get(name)
   def get_arr(name):
-    val = get(name)
-    if val:
-      return val.split(",")
+    val = request.GET.getlist(name)
+    if len(val) == 1:
+      return val[0].split(",")
     else:
-      return []
+      return request.GET.getlist(name)
 
   require = get_arr("require")
   exclude = get_arr("exclude")

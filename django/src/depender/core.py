@@ -245,7 +245,7 @@ class DependerData(object):
     """
     Expands a package name into all its components.
     """
-    return [ (pkg, c) for c in self.packages[pkg].components ]
+    return [(pkg, c) for c in self.packages[pkg].components]
 
   def get_files(self, components, excluded_components=None):
     """
@@ -291,8 +291,15 @@ class YamlFileData(object):
     self.content = _force_unicode(file(filename).read())
     self.metadata = metadata
     self.package = package
-    self.provides = [(package.key, module) for module in _coerce_string_to_list(metadata["provides"])]
-    self.requires = []
+    self.provides = []
+    provides_self = False
+    for module in _coerce_string_to_list(metadata["provides"]):
+       self.provides.append((package.key, module))
+       if metadata.has_key("name") and module == metadata["name"]:
+         provides_self = True
+    if not provides_self and metadata.has_key("name"):
+      self.provides.append((package.key, metadata["name"]))
+
     self.requires = [ self._parse_component_string(r) for r in _coerce_string_to_list(metadata.get("requires", [])) ]
 
   def _parse_component_string(self, component):
