@@ -3,17 +3,17 @@ Depender: A MooTools Dependency Loader
 
 This application generates concatenated libraries from multiple JavaScript files based on their dependencies and the files you require.
 
-Quick Start (Django version)
+Quick Start
 -----------
 
-		$ git clone http://github.com/anutron/mootools-depender.git
-		$ cd mootools-depender
-		$ git submodule update --init
-		$ virtualenv env
-		$ env/bin/python django/setup.py develop
-		$ env/bin/python django/mootools/manage.py runserver
-		
-		Then open http://localhost:8000/depender/build?requireLibs=Core to get MooTools Core.
+	$ git clone http://github.com/anutron/mootools-depender.git
+	$ cd mootools-depender
+	$ git submodule update --init
+	$ virtualenv env
+	$ env/bin/python django/setup.py develop
+	$ env/bin/python django/mootools/manage.py runserver
+
+Then open [http://localhost:8000/depender/](http://localhost:8000/depender/)
 
 requirements:
 
@@ -27,6 +27,19 @@ To install virtualenv on OSX, follow these instructions ([more on virtualenv](ht
 	sudo python ez_setup.py
 	sudo easy_install virtualenv
 	rm ez_setup.py
+
+Quicker Start
+-----------
+
+Check out the [mootools-development](http://github.com/anutron/mootools-development) repo and use that:
+
+	$ git clone git://github.com/anutron/mootools-development.git
+	$ cd mootools-development
+	$ ./go install //installs everything; takes about 3 or 4 minutes
+	$ ./go depender //checks dependencies
+	$ ./go run //runs the server
+
+Then open [http://localhost:9876/](http://localhost:9876/)
 
 Highlights
 ----------
@@ -154,7 +167,7 @@ Additional libraries can be easily added to the system by dropping their content
 Compression
 -----------
 
-Depender makes use of the [YUI compressor](http://developer.yahoo.com/yui/compressor/). It doesn't cache results to disk but rather to memory, which makes it much faster and more ideal for actual deployment. Startup is slow, as it compresses everything, but after this the application is very fast. Note that if you change files on the disk, the application will not pick up these changes until you restart it (unless you are in debug mode; see the section on Django Settings above). Compression is disabled in debug mode.
+Not currently implemented.
 
 Headers and Output
 -------
