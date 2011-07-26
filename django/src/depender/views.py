@@ -15,23 +15,28 @@ import re
 from depender.core import DependerData
 
 LOG = logging.getLogger(__name__)
-exclude_blocks = []
-if hasattr(settings, 'DEPENDER_EXCLUDE_BLOCKS'):
-  exclude_blocks = settings.DEPENDER_EXCLUDE_BLOCKS
 
-def make_depender():
-  return DependerData(settings.DEPENDER_PACKAGE_YMLS, settings.DEPENDER_SCRIPTS_JSON, exclude_blocks)
+def get_version_settings(version=None):
+  if version is None:
+    version = settings.DEFAULT_VERSION
+  return settings.DEPENDER_CONFIGURATIONS[version]
 
-depender = make_depender()
+def make_depender(version):
+  proj = get_version_settings(version)
+  return DependerData(proj['DEPENDER_PACKAGE_YMLS'], proj['DEPENDER_SCRIPTS_JSON'], proj['exclude_blocks'])
 
-def get_depender(reset):
-  global depender
+dependers = {}
+
+def get_depender(version=None, reset=False):
+  global dependers
+  if version is None:
+    version = settings.DEFAULT_VERSION
   if settings.DEPENDER_DEBUG:
-    return make_depender()
+    return make_depender(version)
   else:
-    if reset == "true":
-      depender = make_depender()
-    return depender
+    if reset == "true" or not dependers.get_key(version):
+      dependers[version] = make_depender(version)
+    return depender[version]
 
 def massage(depender, components, packages):
   """
@@ -61,6 +66,7 @@ def build(request):
     exclude - exactly like the *require* value, except it's a list of files to exclude. This is useful if you have already loaded some scripts and now you require another. You can specify the scripts you already have and the one you now need, and the library will return only those you do not have.
     excludeLibs - just like the *exclude* option but instead you can specify entire libraries.
     compression - you'll be returned the compression type you specify regardless of the server default. Note that if you specify a compression type that the server does not allow, you'll be returned which ever one it does. If it does not support compression at all, you will not be returned a compressed file. You can also specify "none" which is useful for development and debugging.
+    version - optional; the version you wish to build from from the configured versions available in settings.py. Uses the default version in settings if not specified
   """
   def get(name):
     return request.GET.get(name)
@@ -71,6 +77,8 @@ def build(request):
     else:
       return request.GET.getlist(name)
 
+  version = request.GET.get('version', settings.DEFAULT_VERSION)
+  version_settings = get_version_settings(version)
   require = get_arr("require")
   exclude = get_arr("exclude")
   excludeLibs = get_arr("excludeLibs")
@@ -81,7 +89,7 @@ def build(request):
   compression = get("compression")
 
   try:
-    dpdr = get_depender(reset)
+    depender = get_depender(reset=reset, version=version)
   except Exception, inst:
     return HttpResponse("alert('Javascript dependency loader unavailable. Contact your administrator to check server logs for details.\n [" + str(inst).replace("'", "\\'") +  "]')")
     
@@ -98,8 +106,8 @@ def build(request):
   required = massage(depender, require, requireLibs)
   excluded = massage(depender, exclude, excludeLibs)
 
-  deps = dpdr.get_transitive_dependencies(required, excluded)
-  files = dpdr.get_files(deps, excluded)
+  deps = depender.get_transitive_dependencies(required, excluded)
+  files = depender.get_files(deps, excluded)
   output = "//No files included for build"
 
   if len(files) > 0:
@@ -111,7 +119,7 @@ def build(request):
     output += "\n//Contents: "
     output += ", ".join([ i.package.key + ":" + i.shortname for i in files ])
 
-    if len(exclude_blocks) > 0:
+    if len(version_settings['exclude_blocks']) > 0:
       output += "\n//Excluded blocks: "
       output += ", ".join(exclude_blocks)
 
@@ -127,7 +135,7 @@ def build(request):
         urlresolvers.reverse("depender.views.build"))
     except Exception:
       url = "/depender/build"
-    output += dpdr.get_client_js(deps, url)
+    output += depender.get_client_js(deps, url)
 
   response = HttpResponse(output, content_type="application/x-javascript")
   if download == "true":
@@ -136,10 +144,12 @@ def build(request):
 build.login_notrequired = True
 
 def builder(request, template='packager'):
-  dpdr = get_depender(False)
+  version = request.GET.get('version', settings.DEFAULT_VERSION)
+  dpdr = get_depender(version=version, reset=False)
   packages = {}
+  proj = get_version_settings(version)
   #Core, More, etc
-  for p in settings.BUILDER_PACKAGES:
+  for p in proj['BUILDER_PACKAGES']:
     if not hasattr(packages, p):
       packages[p] = {}
     #Fx, Element, etc
@@ -155,9 +165,9 @@ def builder(request, template='packager'):
     return [pc[1] for pc in packages[package][filename]['provides']]
   def get_depends(package, filename):
     return [pc[0] + '/' + pc[1] for pc in packages[package][filename]['requires']]
-  return render_to_response(template + '.mako', 
+  return render_to_response(template + '.mako',
     {
-      'packages': settings.BUILDER_PACKAGES,
+      'packages': proj['BUILDER_PACKAGES'],
       'package_data': packages,
       'get_provides': get_provides,
       'get_depends': get_depends,
