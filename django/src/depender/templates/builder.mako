@@ -65,11 +65,21 @@
 					<tr class="middle unchecked"> 
 						<td class="first check"> 
 							<div class="checkbox"></div> 
-							<input type="checkbox" name="require" value="${p}/${filedata.metadata['name']}" data-depends="${', '.join(get_depends(p, filedata.filename))}" /> 
+							<%
+								if filedata.metadata.has_key('name'):
+									name = filedata.metadata['name']
+								else:
+									name = filedata.shortname.split('/')[-1]
+
+								description = "no description"
+								if filedata.metadata.has_key('description'):
+									description = filedata.metadata['description']
+							%>
+							<input type="checkbox" name="require" value="${p}/${name}" data-depends="${', '.join(get_depends(p, filedata.filename))}" /> 
 						</td> 
-						<td class="middle file">${filedata.metadata['name']}</td> 
+						<td class="middle file">${name}</td> 
 						<td class="middle provides">${', '.join(get_provides(p, filedata.filename))}</td> 
-						<td class="last description"><p>${filedata.metadata['description']}</p></td> 
+						<td class="last description"><p>${description}</p></td> 
 					</tr> 
 					% endfor
  

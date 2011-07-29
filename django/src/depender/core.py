@@ -325,7 +325,7 @@ class ScriptsJsonFileData(object):
   """Source file pointed to by a scripts.json"""
   def __init__(self, module_name, shortname, filename, package, metadata):
     self.filename = filename
-    self.shortname = shortname
+    self.shortname = shortname.split('/')[1]
     self.content = _force_unicode(file(filename).read())
     self.package = package
     self.metadata = metadata
