@@ -34,9 +34,9 @@ def get_depender(version=None, reset=False):
   if settings.DEPENDER_DEBUG:
     return make_depender(version)
   else:
-    if reset == "true" or not dependers.get_key(version):
+    if reset == "true" or not dependers.has_key(version):
       dependers[version] = make_depender(version)
-    return depender[version]
+    return dependers[version]
 
 def massage(depender, components, packages):
   """
