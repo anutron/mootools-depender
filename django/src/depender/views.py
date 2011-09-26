@@ -92,7 +92,7 @@ def build(request):
     depender = get_depender(reset=reset, version=version)
   except Exception, inst:
     return HttpResponse("alert('Javascript dependency loader unavailable. Contact your administrator to check server logs for details.\n [" + str(inst).replace("'", "\\'") +  "]')")
-    
+
   if compression is None:
     compression = "none"
     # TODO: implement compression
@@ -172,7 +172,8 @@ def builder(request, template='packager'):
       'get_provides': get_provides,
       'get_depends': get_depends,
       'dpdr': dpdr,
-      'markdown': markdown
+      'markdown': markdown,
+      'version': version
     }
   )
 
