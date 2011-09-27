@@ -91,7 +91,7 @@ def build(request):
   try:
     depender = get_depender(reset=reset, version=version)
   except Exception, inst:
-    return HttpResponse("alert('Javascript dependency loader unavailable. Contact your administrator to check server logs for details.\n [" + str(inst).replace("'", "\\'") +  "]')")
+    return HttpResponse("alert('Javascript dependency loader unavailable. Contact your administrator to check server logs for details. [" + str(inst).replace("'", "\\'") +  "]')")
 
   if compression is None:
     compression = "none"
