@@ -8,7 +8,7 @@ setup(
       version = "0.3",
       url = 'http://www.mootools.net',
       description = "Depender: JS Dep loader",
-      install_requires = ['setuptools', 'Django==1.4.1', 'PyYAML', 'simplejson'],
+      install_requires = ['setuptools', 'Django==2.2.24', 'PyYAML', 'simplejson'],
       packages = find_packages(base),
       package_dir={'': base}
 )
